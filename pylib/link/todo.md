@@ -1,0 +1,2 @@
+- [ ] My uncompleted list item
+- [x] This one is already done
