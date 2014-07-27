@@ -2,6 +2,8 @@
 
 from maya import cmds
 from link.util.control.style import Style
+from link.util import common
+from link.util import name
 import logging
 log = logging.getLogger(__name__)
 
@@ -39,9 +41,13 @@ class Shape(object):
             # Remove temp transform
             cmds.delete(temp)
 
-        # Match vlaues
-        self.set_scale(self.scale)
-        self.set_rotate(self.rotate)
+        # Set colors
+        self.set_color(name.get_position(self.parent))
+
+
+        # Match values
+        self.scale_shapes(self.scale)
+        self.rotate_shapes(self.rotate)
 
         # Clear selection
         cmds.select(cl=True)
@@ -56,16 +62,15 @@ class Shape(object):
         else:
             log.error("Shape style doesn't exist: '%s'" % style)
 
-    def set_scale(self, value):
+    def scale_shapes(self, value):
         """Scale shape"""
 
         cl_shape, cl_transform = cmds.cluster(self.nodes)
         cmds.setAttr("%s.scale" % cl_transform, value, value, value, type="float3")
-
         cmds.delete(self.nodes, ch=True)
         self.scale = value
 
-    def set_rotate(self, array):
+    def rotate_shapes(self, array):
         """Rotate shape"""
 
         cl_shape, cl_transform = cmds.cluster(self.nodes)
@@ -73,3 +78,11 @@ class Shape(object):
 
         cmds.delete(self.nodes, ch=True)
         self.rotate = array
+
+    def set_color(self, position):
+        """Change display color of shapes"""
+
+        color = common.get_color_index(position)
+        for shape in self.nodes:
+            cmds.setAttr("%s.overrideEnabled" % shape, 1)
+            cmds.setAttr("%s.overrideColor" % shape, color)

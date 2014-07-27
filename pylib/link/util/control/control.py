@@ -49,8 +49,8 @@ class Control(object):
     def set_style(self, style):
         self._shape.set_style(style)
 
-    def set_scale(self, value):
-        self._shape.set_scale(value)
+    def scale_shapes(self, value):
+        self._shape.scale_shapes(value)
 
-    def set_rotate(self, value):
-        self._shape.set_rotate(value)
+    def rotate_shapes(self, value):
+        self._shape.rotate_shapes(value)

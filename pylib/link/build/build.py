@@ -4,6 +4,7 @@ from maya import cmds
 from link.build.modules.components.skeleton import Skeleton
 from link.build.modules.components.proxy import Proxy
 from link.build.modules.parts.fk import FkChain, Fk
+from link.build.modules.parts.ik import Ik
 
 import logging
 log = logging.getLogger(__name__)
@@ -22,10 +23,17 @@ class Link(object):
         self._create_nodes()
 
     def _build(self):
-        self._create_skeleton()
-        self._create_proxy()
+        """Create rig"""
+
+        # Components
+        self.create_skeleton()
+        # self.create_proxy()
+
+        # Parts
         for pos in ["L", "R"]:
-            self._create_arm(pos)
+            self.create_collar(pos)
+            self.create_arm(pos)
+            self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
@@ -55,34 +63,56 @@ class Link(object):
         for key, part in self.components.items():
             cmds.parent(part.top_node, self.comp_node)
 
-    def _create_skeleton(self):
+    def create_skeleton(self):
         component = Skeleton('C', 'skeleton')
         _file = "Users/eddiehoyle/Python/link/resources/skeleton.ma"
         component.set_file(_file)
         component.create()
 
-        self._append_component(component)
+        self.append_component(component)
 
-    def _create_proxy(self):
+    def create_proxy(self):
         component = Proxy('C', 'proxy')
         _file = "Users/eddiehoyle/Python/link/resources/proxy.ma"
         component.set_file(_file)
         component.create()
 
-        self._append_component(component)
+        self.append_component(component)
 
-    def _create_arm(self, position):
-        part = FkChain(position, 'arm')
-        joints = ["%s_arm_%s_jnt" % (position, index) for index in range(3)]
-        print joints
+    def create_collar(self, position):
+        part = Ik(position, 'collar')
+        joints = ["%s_collar_0_jnt" % position, "%s_arm_0_jnt" % position]
         part.set_joints(joints)
         part.create()
+        self.append_part(part)
 
+        part.scale_shapes(1)
+        part.add_stretch()
 
-        self._append_part(part)
+    def create_arm(self, position):
+        part = FkChain(position, 'arm')
+        joints = ["%s_arm_%s_jnt" % (position, index) for index in range(3)]
+        part.set_joints(joints)
+        part.create()
+        self.append_part(part)
 
-    def _append_part(self, part):
+        part.scale_shapes(4)
+        part.rotate_shapes([0, 0, 90])
+        part.add_stretch()
+
+    def create_leg(self, position):
+        part = FkChain(position, 'leg')
+        joints = ["%s_leg_%s_jnt" % (position, index) for index in range(3)]
+        part.set_joints(joints)
+        part.create()
+        self.append_part(part)
+
+        part.scale_shapes(4)
+        part.rotate_shapes([90, 0, 0])
+        part.add_stretch()
+
+    def append_part(self, part):
         self.parts[part.name] = part
 
-    def _append_component(self, part):
+    def append_component(self, part):
         self.components[part.name] = part
