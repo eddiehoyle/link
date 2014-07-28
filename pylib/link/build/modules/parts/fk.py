@@ -11,6 +11,7 @@ class Fk(Part):
     def __init__(self, position, description):
         super(Fk, self).__init__(position, description)
 
+        self.description = "%sFk" % description
         self.joints = []
         self.controls = {}
 
@@ -25,26 +26,22 @@ class Fk(Part):
             # Append control
             self.controls[ctl.name] = ctl
 
-            # Store under top node
-            cmds.parent(ctl.grp, self.top_node)
+        return self.controls
 
     def match_controls(self):
         """Match controls to joints"""
-        for joint, key in zip(sorted(self.joints), sorted(self.controls.keys())):
+
+        # Note:
+            # Need to organise a build order for joints and controls
+            # Atm this is unsafe, no correlation
+
+        for joint, key in zip(self.joints, self.controls.keys()):
             xform.match(self.controls[key].grp, joint)
 
     def connect_controls(self):
         """Connect controls"""
-        index = 0
-        for key, joint in zip(sorted(self.controls.keys()), sorted(self.joints)):
-
-            pma = cmds.createNode("plusMinusAverage")
-            for axis in ["X", "Y", "Z"]:
-
-                cmds.connectAttr("%s.rotate%s" % (self.controls[key].ctl, axis), "%s.input3D[%s].input3D%s" % (pma, index, axis.lower()))
-                cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.rotate%s" % (joint, axis))
-
-            index += 1
+        for key, joint in zip(self.controls.keys(), self.joints):
+            cmds.orientConstraint(self.controls[key].ctl, joint, mo=True)
 
     def add_stretch(self):
         """Stretch is driven by translateX in object space of transform"""

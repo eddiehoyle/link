@@ -7,11 +7,13 @@
 - [x] Write Fk part
 - [x] Write FkChain part
 - [x] Add Fk base stretch logic
-- [ ] Write Ik part
+- [x] Write Ik part
+- [x] Write Ik stretch
 - [ ] Write IkFkChain part
+- [ ] Store control creation order to know first, last, etc
 
 ## Utils
-- [ ] Write attribute library
+- [ ] Write attribute library (properly)
 - [ ] Create control and setup node logic in Modules
 - [ ] Add global shape attr driver logic
 

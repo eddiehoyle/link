@@ -13,6 +13,7 @@ class Ik(Part):
     def __init__(self, position, description):
         super(Ik, self).__init__(position, description)
 
+        self.description = "%sIk" % description
         self.joints = []
         self.controls = {}
 
@@ -33,8 +34,7 @@ class Ik(Part):
         # Append control
         self.controls[ctl.name] = ctl
 
-        # Store under top node
-        cmds.parent(ctl.grp, self.top_node)
+        return self.controls
 
     def match_controls(self):
 
@@ -44,43 +44,41 @@ class Ik(Part):
 
     def connect_controls(self):
 
-        ctl = self.controls[self.controls.keys()[0]]
-        joint = self.joints[-1]
-
-        # Get ikHandle position
-        ik_world_pos = cmds.xform(self.ik, q=True, ws=True, t=True)
-
-        index = 0
-        pma = cmds.createNode("plusMinusAverage")
-        for axis in ["X", "Y", "Z"]:
-
-            cmds.connectAttr("%s.translate%s" % (ctl.ctl, axis), "%s.input3D[%s].input3D%s" % (pma, index, axis.lower()))
-            cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.translate%s" % (self.ik, axis))
-
-        # Match original ikHandle values
-        for ik_axis_pos, axis in zip(ik_world_pos, ["X", "Y", "Z"]):
-            cmds.setAttr("%s.input3D[%s].input3D%s" % (pma, (index + 1), axis.lower()), ik_axis_pos)
+        # Parent IK handle under ctl
+        cmds.parent(self.ik, self.controls[self.controls.keys()[0]].ctl)
 
     def add_stretch(self):
+        """Drive joints by translateX and distance between start and end"""
 
-        '''
-        TRY:
-            Drive translateX of ik joint by distance node?
-        '''
+        # Create distance
+        loc_start, loc_end, dst_node = common.create_distance(self.joints[0], self.joints[-1])
+        distance = cmds.getAttr("%s.distance" % dst_node)
 
-        # ctl = self.controls[self.controls.keys()[0]]
-        # pma = cmds.createNode("plusMinusAverage")
-        # index = 0
-        # for axis in ["X", "Y", "Z"]:
+        # Create stretch multiplier
+        md_mlt = cmds.createNode("multiplyDivide")
+        cmds.connectAttr("%s.distance" % dst_node, "%s.input1X" % md_mlt)
+        cmds.setAttr("%s.input2X" % md_mlt, distance)
+        cmds.setAttr("%s.operation" % md_mlt, 2)
 
-        #     cmds.connectAttr("%s.translate%s" % (self.joints[-1], axis), "%s.input3D[%s].input3D%s" % (pma, index, axis.lower()))
-        #     cmds.connectAttr("%s.translate%s" % (ctl.ctl, axis), "%s.input3D[%s].input3D%s" % (pma, (index + 1), axis.lower()))
-        #     cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.translate%s" % (self.effector, axis), force=True)
+        # Detect positive or negative X value
+        mult = 1
+        start_x = cmds.getAttr("%s.translateX" % loc_start)
+        end_x = cmds.getAttr("%s.translateX" % loc_end)
+        if end_x - start_x < 0:
+            mult = -1
 
+        # Connect logic
+        md_dst = cmds.createNode("multiplyDivide")
+        cmds.connectAttr("%s.outputX" % md_mlt, "%s.input2X" % md_dst)
+        cmds.setAttr("%s.input1X" % md_dst, distance * mult)
 
-        # joint_local_pos = cmds.xform(self.joints[-1], q=True, os=True, t=True)
-        # for joint_axis_pos, axis in zip(joint_local_pos, ["X", "Y", "Z"]):
-        #     cmds.setAttr("%s.input3D[%s].input3D%s" % (pma, (index + 1), axis.lower()), joint_axis_pos)
+        # Assign parents
+        # cmds.parent(loc_start, self.joints[0])
+        cmds.parent(loc_end, self.controls[self.controls.keys()[0]].ctl)
+
+        # Add to joint
+        cmds.connectAttr("%s.outputX" % md_dst, "%s.translateX" % self.joints[-1])
+
 
 
 

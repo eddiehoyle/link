@@ -5,6 +5,7 @@ from link.build.modules.components.skeleton import Skeleton
 from link.build.modules.components.proxy import Proxy
 from link.build.modules.parts.fk import FkChain, Fk
 from link.build.modules.parts.ik import Ik
+from link.build.modules.parts.ikfk import IkFk
 
 import logging
 log = logging.getLogger(__name__)
@@ -32,8 +33,8 @@ class Link(object):
         # Parts
         for pos in ["L", "R"]:
             self.create_collar(pos)
-            self.create_arm(pos)
-            self.create_leg(pos)
+            # self.create_arm(pos)
+            # self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
@@ -80,7 +81,7 @@ class Link(object):
         self.append_component(component)
 
     def create_collar(self, position):
-        part = Ik(position, 'collar')
+        part = IkFk(position, 'collar')
         joints = ["%s_collar_0_jnt" % position, "%s_arm_0_jnt" % position]
         part.set_joints(joints)
         part.create()
