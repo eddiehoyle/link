@@ -33,8 +33,8 @@ class Link(object):
         # Parts
         for pos in ["L", "R"]:
             self.create_collar(pos)
-            # self.create_arm(pos)
-            # self.create_leg(pos)
+            self.create_arm(pos)
+            self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
@@ -51,18 +51,21 @@ class Link(object):
         self.top_node = cmds.createNode("transform", name=self.asset)
         self.part_node = cmds.createNode("transform", name="parts")
         self.comp_node = cmds.createNode("transform", name="components")
+        self.settings_node = cmds.createNode("transform", name="settings")
 
-        cmds.parent([self.part_node, self.comp_node], self.top_node)
+        cmds.parent([self.part_node, self.comp_node, self.settings_node], self.top_node)
 
     def _parent_parts(self):
         log.info("Parenting %s part(s)" % len(self.parts.keys()))
         for key, part in self.parts.items():
             cmds.parent(part.top_node, self.part_node)
+            cmds.parent(cmds.listRelatives(part.settings_node, parent=True)[0], self.settings_node)
 
     def _parent_components(self):
         log.info("Parenting %s component(s)" % len(self.components.keys()))
-        for key, part in self.components.items():
-            cmds.parent(part.top_node, self.comp_node)
+        for key, comp in self.components.items():
+            cmds.parent(comp.top_node, self.comp_node)
+            cmds.parent(cmds.listRelatives(comp.settings_node, parent=True)[0], self.settings_node)
 
     def create_skeleton(self):
         component = Skeleton('C', 'skeleton')

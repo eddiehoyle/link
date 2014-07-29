@@ -2,7 +2,7 @@
 
 from link.util.control.shape import Shape
 from link.util.control.transform import Transform
-from link.util import name
+from link import util
 from maya import cmds
 import logging
 log = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class Control(object):
         self.index = index
         self.suffix = "ctl"
 
-        self.name = name.create_name(self.position, self.description, self.index, self.suffix)
+        self.name = util.name.create_name(self.position, self.description, self.index, self.suffix)
 
         self._group = None
         self._transform = Transform(self.name)
@@ -40,7 +40,7 @@ class Control(object):
 
     def create(self):
 
-        self._group = cmds.createNode("transform", name=name.set_suffix(self.name, "grp"))
+        self._group = cmds.createNode("transform", name=util.name.set_suffix(self.name, "grp"))
         self._transform.create()
         self._shape.create(self.ctl, style=self._style)
 
@@ -54,3 +54,22 @@ class Control(object):
 
     def rotate_shapes(self, value):
         self._shape.rotate_shapes(value)
+
+    def lock_translates(self):
+        util.attr.lock_translates(self.ctl)
+
+    def lock_rotates(self):
+        util.attr.lock_rotates(self.ctl)
+
+    def lock_scales(self):
+        util.attr.lock_scales(self.ctl)
+
+    def lock_all(self):
+        util.attr.lock_all(self.ctl)
+
+    def lock_vis(self):
+        util.attr.lock_vis(self.ctl)
+
+
+
+

@@ -1,6 +1,6 @@
 
 from link.util import name, xform
-from link.util import node, common
+from link.util import common
 from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.part import Part
@@ -13,7 +13,6 @@ class Fk(Part):
 
         self.description = "%sFk" % description
         self.joints = []
-        self.controls = {}
 
     def create_controls(self):
         """Create controls"""
@@ -22,6 +21,11 @@ class Fk(Part):
             ctl = Control(self.position, self.description, index)
             ctl.create()
             ctl.set_style("circle")
+
+            # Lock attrs
+            ctl.lock_translates()
+            ctl.lock_scales()
+            ctl.lock_vis()
 
             # Append control
             self.controls[ctl.name] = ctl
@@ -68,6 +72,13 @@ class Fk(Part):
                 cmds.setAttr("%s.input2" % adl, distance * mult)
                 cmds.connectAttr("%s.output" % adl, "%s.translateX" % child_ctl.grp)
 
+    def omit_last_control(self):
+        """Delete last control"""
+
+        if self.controls:
+            last = self.get_control(-1)
+            cmds.delete(last.grp)
+            del self.controls[last.name]
 
 
 
@@ -79,6 +90,7 @@ class FkChain(Fk):
 
     def _post_create(self):
         super(FkChain, self)._post_create()
+        """Create hierarchy"""
 
         # Create chain
         for key, ctl in self.controls.items():

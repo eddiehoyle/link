@@ -1,6 +1,6 @@
 
 from link.util import name, xform
-from link.util import node, common
+from link.util import common
 from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.part import Part

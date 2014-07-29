@@ -2,6 +2,7 @@ from link.util import name
 from maya import cmds
 from link.build.modules.module import Module
 from link.util import attr
+from collections import OrderedDict
 
 class Part(Module):
     '''Joint dependent animation base class'''
@@ -11,40 +12,22 @@ class Part(Module):
 
         self.suffix = "prt"
         self.name = name.set_suffix(self.name, self.suffix)
-
-    def _create_settings(self):
-        loc = cmds.spaceLocator(name=name.set_suffix(self.name, "settings"))[0]
-        shape = cmds.listRelatives(loc, shapes=True)[0]
-
-        # Add attr
-        attr.lock_all(loc)
-        attr_path = "%s.parent" % shape
-        cmds.addAttr(shape, ln="parent", at="long", min=0, max=4)
-        cmds.setAttr(attr_path, cb=True)
-        cmds.setAttr(attr_path, k=True)
-
-        # Hide these
-        for local in ["localPosition", "localScale"]:
-            for axis in ["X", "Y", "Z"]:
-                attr_path = "%s.%s%s" % (shape, local, axis)
-                cmds.setAttr(attr_path, cb=False)
-
-        self.settings_node = shape
-
+        self.controls = OrderedDict()
 
     def _create(self):
-        self._create_settings()
         self.create_controls()
         self.match_controls()
         self.connect_controls()
-        self._add_settings()
 
+    def _post_create(self):
+        super(Part, self)._post_create()
 
-    def _add_settings(self):
-        # Temp method
-        for key in self.controls.keys():
-            cmds.parent(self.settings_node, self.controls[key].ctl, shape=True, add=True)
+        # Parent settings BEFORE adding shapes
+        cmds.parent(cmds.listRelatives(self.settings_node, parent=True)[0], self.top_node)
 
+        for key, ctl, in self.controls.items():
+            cmds.parent(ctl.grp, self.top_node)
+            cmds.parent(self.settings_node, ctl.ctl, add=True, shape=True)
 
     def set_joints(self, joints):
         self.joints = joints
@@ -60,7 +43,7 @@ class Part(Module):
 
     def get_control(self, index):
         try:
-            return sorted(self.controls.keys())[index]
+            return self.controls[self.controls.keys()[index]]
         except IndexError as e:
             raise IndexError("Control index not found: %s" % index)
 
