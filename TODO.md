@@ -1,3 +1,9 @@
+## Stretch goals
+- [ ] Create layout rig
+- [ ] Create deform rig
+- [ ] Create rig interface API
+- [ ] Add more readmes
+
 
 ## Fundamental
 - [x] Split part creation so multi-parts can be made easier
@@ -6,6 +12,7 @@
 - [x] Add settings node
 - [ ] Get config working
 - [ ] Write data I/O logic
+- [ ] Write deformer save/load data logic
 
 
 ## Parts
