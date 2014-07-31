@@ -4,15 +4,21 @@ from maya import cmds
 
 def match(target, source):
     """Match target to source xform"""
-    match_position(target, source)
-    match_rotate(target, source)
+    match_translates(target, source)
+    match_rotates(target, source)
 
-def match_rotate(target, source):
-    """Match worldspace rotate"""
-    source_rot = cmds.xform(source, q=True, ws=True, ro=True)
-    cmds.xform(target, ro=source_rot, ws=True)
-
-def match_position(target, source):
+def match_translates(target, source):
     """Match worldspace position"""
-    source_pos = cmds.xform(source, q=True, ws=True, t=True)
-    cmds.xform(target, t=source_pos, ws=True)
+    pos = cmds.xform(source, q=True, ws=True, t=True)
+    set_translates(target, pos)
+
+def set_translates(transform, array, world=True):
+    cmds.xform(transform, t=array, ws=world, os=not world)    
+
+def match_rotates(target, source):
+    """Match worldspace rotate"""
+    rot = cmds.xform(source, q=True, ws=True, ro=True)
+    set_rotates(target, rot)
+
+def set_rotates(transform, array, world=True):
+    cmds.xform(transform, ro=array, ws=world, os=not world)    

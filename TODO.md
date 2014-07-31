@@ -21,11 +21,14 @@
 - [x] Add Fk base stretch logic
 - [x] Write Ik part
 - [x] Write Ik stretch
+- [x] Add settings to proxy component
+- [x] Add settings to skeleton component
 - [ ] Write IkFkChain part
+- [x] Expose orient and point offsets to parts at creation time
 - [x] Store control creation order to know first, last, etc
 - [x] Add settings group
 - [ ] Write a twist deformer part
-- [ ] Write root transform part
+- [x] Write a global part (named Base case global is reserved)
 - [ ] Write Ik limb part
 - [ ] Write spine part
 - [ ] Write foot part
@@ -33,6 +36,8 @@
 - [ ] Create face part library
 - [ ] Write eye part
 - [ ] Write mouth part
+- [x] Write simple control part
+- [ ] Create global control style
 
 
 ## Utils

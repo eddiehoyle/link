@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+from link.util import attr
+
 from maya import cmds
 from link.build.modules.components.component import Component
 
@@ -22,6 +26,7 @@ class Proxy(Component):
 
         self._parent_geo_to_jnt()
 
+
     def _parent_geo_to_jnt(self):
         """Parent all geometry under corresponding joints"""
 
@@ -32,3 +37,18 @@ class Proxy(Component):
                 if cmds.nodeType(geo) == "transform" and cmds.nodeType(jnt) == "joint":
                     cmds.parent(geo, jnt)
 
+
+    def connect_settings(self):
+        """Connect component nodes to settings node"""
+        
+        # Add settings
+        cmds.addAttr(self.settings_node, ln="displayType", at="double", min=0, max=2)
+        cmds.setAttr("%s.displayType" % self.settings_node, cb=True)
+        cmds.setAttr("%s.displayType" % self.settings_node, k=False)
+
+        for geo in self.nodes:
+            meshes = cmds.listRelatives(geo, shapes=True) or []
+
+            for mesh in meshes:
+                cmds.setAttr("%s.overrideEnabled" % mesh, True)
+                cmds.connectAttr("%s.displayType" % self.settings_node, "%s.overrideDisplayType" % mesh)

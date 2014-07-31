@@ -5,6 +5,8 @@ from link.build.modules.components.skeleton import Skeleton
 from link.build.modules.components.proxy import Proxy
 from link.build.modules.parts.fk import FkChain, Fk
 from link.build.modules.parts.ik import Ik
+from link.build.modules.parts.simple import Simple
+from link.build.modules.parts.base import Base
 from link.build.modules.parts.ikfk import IkFk
 
 import logging
@@ -26,11 +28,17 @@ class Link(object):
     def _build(self):
         """Create rig"""
 
+        # Global control
+        self.create_global()
+
         # Components
         self.create_skeleton()
-        # self.create_proxy()
+        self.create_proxy()
 
         # Parts
+        self.create_root()
+        self.create_hip()
+
         for pos in ["L", "R"]:
             self.create_collar(pos)
             self.create_arm(pos)
@@ -83,6 +91,13 @@ class Link(object):
 
         self.append_component(component)
 
+    def create_global(self):
+        part = Base("C", "global")
+        part.create()
+        self.append_part(part)
+
+        part.scale_shapes(12)
+
     def create_collar(self, position):
         part = IkFk(position, 'collar')
         joints = ["%s_collar_0_jnt" % position, "%s_arm_0_jnt" % position]
@@ -100,7 +115,7 @@ class Link(object):
         part.create()
         self.append_part(part)
 
-        part.scale_shapes(4)
+        part.scale_shapes(8)
         part.rotate_shapes([0, 0, 90])
         part.add_stretch()
 
@@ -111,9 +126,27 @@ class Link(object):
         part.create()
         self.append_part(part)
 
-        part.scale_shapes(4)
+        part.scale_shapes(8)
         part.rotate_shapes([90, 0, 0])
         part.add_stretch()
+
+    def create_hip(self):
+        part = Simple('C', 'hip')
+        part.set_joints(["C_spine_0_jnt"])
+        part.set_orient([0, 0, 0], world=True)
+        part.create()        
+        self.append_part(part)
+
+        part.scale_shapes(6)
+
+    def create_root(self):
+        part = Simple('C', 'root')
+        part.set_joints(["C_root_0_jnt"])
+        part.set_orient([0, 0, 0], world=True)
+        part.create()
+        self.append_part(part)
+        
+        part.scale_shapes(10)
 
     def append_part(self, part):
         self.parts[part.name] = part

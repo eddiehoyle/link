@@ -39,10 +39,9 @@ class Module(object):
 
         # Hide shape
         cmds.setAttr("%s.visibility" % shape, 0)
-        anno.add(loc, loc)
+        # anno.add(loc, loc)
 
         self.settings_node = shape
-
 
     def _create(self):
         pass
@@ -56,3 +55,7 @@ class Module(object):
         self._create()
         self._post_create()
 
+        self.connect_settings()
+
+    def connect_settings(self):
+        pass

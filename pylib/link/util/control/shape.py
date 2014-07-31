@@ -63,18 +63,21 @@ class Shape(object):
             log.error("Shape style doesn't exist: '%s'" % style)
 
     def scale_shapes(self, value):
-        """Scale shape"""
+        """Scale shapes"""
 
         cl_shape, cl_transform = cmds.cluster(self.nodes)
         cmds.setAttr("%s.scale" % cl_transform, value, value, value, type="float3")
         cmds.delete(self.nodes, ch=True)
         self.scale = value
 
-    def rotate_shapes(self, array):
+    def rotate_shapes(self, array, world=False):
         """Rotate shape"""
 
         cl_shape, cl_transform = cmds.cluster(self.nodes)
-        cmds.setAttr("%s.rotate" % cl_transform, *array, type="float3")
+        if world:
+            cmds.xform(cl_transform, ws=True, ro=array)
+        else:
+            cmds.setAttr("%s.rotate" % cl_transform, *array, type="float3")
 
         cmds.delete(self.nodes, ch=True)
         self.rotate = array
