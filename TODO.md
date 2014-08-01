@@ -37,13 +37,15 @@
 - [ ] Write eye part
 - [ ] Write mouth part
 - [x] Write simple control part
-- [ ] Create global control style
+- [ ] Create global control style to not be big quad arrow
 
 
 ## Utils
 - [x] Write attribute library (properly)
 - [ ] Tidy up util.name 
 - [ ] Tidy up util.attr
+- [ ] Add vector utils
+- [ ] Add joint utils for easy joint creation for test methods
 
 
 ## Build
