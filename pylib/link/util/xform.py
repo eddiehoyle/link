@@ -21,4 +21,4 @@ def match_rotates(target, source):
     set_rotates(target, rot)
 
 def set_rotates(transform, array, world=True):
-    cmds.xform(transform, ro=array, ws=world, os=not world)    
+    cmds.xform(transform, ro=array, ws=world, os=not world)

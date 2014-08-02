@@ -44,7 +44,6 @@ class Shape(object):
         # Set colors
         self.set_color(name.get_position(self.parent))
 
-
         # Match values
         self.scale_shapes(self.scale)
         self.rotate_shapes(self.rotate)
@@ -58,6 +57,7 @@ class Shape(object):
         if Style().exists(style):
             parent_transform = self.parent
             cmds.delete(self.nodes)
+            self.nodes = []
             self.create(parent_transform, style)
         else:
             log.error("Shape style doesn't exist: '%s'" % style)
@@ -65,22 +65,23 @@ class Shape(object):
     def scale_shapes(self, value):
         """Scale shapes"""
 
-        cl_shape, cl_transform = cmds.cluster(self.nodes)
-        cmds.setAttr("%s.scale" % cl_transform, value, value, value, type="float3")
-        cmds.delete(self.nodes, ch=True)
+        # Match rotate pivot of transform
+        for shape in self.nodes:
+            spans = cmds.getAttr("%s.spans" % shape) + 1
+            cvs = cmds.ls("%s.cv[0:%s]" % (shape, spans), r=True)
+            cmds.xform(cvs, s=(value, value, value), r=True)
+
         self.scale = value
 
-    def rotate_shapes(self, array, world=False):
+    def rotate_shapes(self, vector):
         """Rotate shape"""
 
-        cl_shape, cl_transform = cmds.cluster(self.nodes)
-        if world:
-            cmds.xform(cl_transform, ws=True, ro=array)
-        else:
-            cmds.setAttr("%s.rotate" % cl_transform, *array, type="float3")
-
-        cmds.delete(self.nodes, ch=True)
-        self.rotate = array
+        # Match rotate pivot of transform
+        for shape in self.nodes:
+            spans = cmds.getAttr("%s.spans" % shape) + 1
+            cvs = cmds.ls("%s.cv[0:%s]" % (shape, spans), r=True)
+            cmds.xform(cvs, ro=vector, r=True)
+        self.rotate = vector
 
     def set_color(self, position):
         """Change display color of shapes"""

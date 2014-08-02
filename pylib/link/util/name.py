@@ -15,7 +15,7 @@ def create_name(position, description, index=0, suffix="grp"):
     return "%s_%s_%s_%s" % (position, description, index, suffix)
 
 def generate_name(position, description, index=0, suffix="grp"):
-    """Generate a name that doesn't exist yet in scene"""
+    """Generate a name that doesn't exist in scene yet"""
 
     name = create_name(position, description, index, suffix)
     while cmds.objExists(name):
@@ -83,45 +83,81 @@ def set_description_suffix(name, description_suffix):
 
 
 
+#--------------------------------------------#
+# Dunno if I wanna use this class or not yet
+
+class Name(object):
+    """
+    """
+
+    def __init__(self, position, description, type):
+
+        self.__position = position
+        self.__description = description
+        self.__index = 0
+        self.__suffix = type
+
+        self.__name = "%s_%s_%s_%s" % (self.__position,
+                                       self.__description,
+                                       self.__index,
+                                       self.__suffix)
+
+    def __repr__(self):
+        return self.get_name()
+
+    def __str__(self):
+        return self.get_name()
+
+    def name(self):
+        return self.__name
+
+    def position(self):
+        return self.__position
+
+    def description(self):
+        return self.__description
+
+    def index(self):
+        return self.__index
+
+    def suffix(self):
+        return self.__suffix
+
+    #-----------#
+    # Private
+
+    def __get_position(self):
+        return self.__position
+    
+    def __get_description(self):
+        return self.__description
+    
+    def __get_index(self):
+        return self.__index
+    
+    def __get_suffix(self):
+        return self.__suffix
+    
+    def __set_position(self, position):
+        self.__position = position
+    
+    def __set_description(self, description):
+        self.__description = description
+
+    def __set_description(self, description):
+        self.__index = index
+    
+    def __set_suffix(self, suffix):
+        self.__suffix = suffix
+
+    def __rebuild(self, func):
+        pass
 
 
+    # property(name, fget=name, fset=None, fdel=None)
 
+    # property(position, fget=__get_position, fset=__set_position, fdel=None)
+    # property(index, fget=__get_index, fset=__set_index, fdel=None)
+    # property(description, fget=__get_description, fset=__set_description, fdel=None)
+    # property(suffix, fget=__get_suffix, fset=__set_suffix, fdel=None)
 
-
-
-
-
-
-
-
-
-
-# class Name(object):
-#     def __init__(self, position, description, type):
-#         self.position = position
-#         self.description = description
-#         self.index = 0
-#         self.type = type
-
-#         self.__generate_name()
-
-#     def __generate_name(self):
-#         """Create unique name"""
-
-#         name = "%s_%s_%s_%s" % (self.position, self.description, self.index, self.type)
-#         while cmds.objExists(name):
-#             self.index += 1
-#             name = "%s_%s_%s_%s" % (self.position, self.description, self.index, self.type)
-#         self.name = name
-
-#     def set_position(self, position):
-#         self.position = position
-#         return "%s_%s_%s_%s" % (self.position, self.description, self.index, self.type)
-
-#     def set_description(self, description):
-#         self.description = description
-#         return "%s_%s_%s_%s" % (self.position, self.description, self.index, self.type)
-
-#     def set_type(self, type):
-#         self.type = type
-#         return "%s_%s_%s_%s" % (self.position, self.description, self.index, self.type)

@@ -22,6 +22,8 @@ class Control(object):
         self._shape = Shape(self.name)
         self._style = style
 
+        self.joint = None
+
     @property
     def ctl(self):
         return self._transform.node
@@ -52,8 +54,8 @@ class Control(object):
     def scale_shapes(self, value):
         self._shape.scale_shapes(value)
 
-    def rotate_shapes(self, value, world=False):
-        self._shape.rotate_shapes(value, world=world)
+    def rotate_shapes(self, value):
+        self._shape.rotate_shapes(value)
 
     def lock_translates(self):
         util.attr.lock_translates(self.ctl)
@@ -70,7 +72,7 @@ class Control(object):
     def lock_vis(self):
         util.attr.lock_vis(self.ctl)
 
-    def set_translates(self, array):
+    def set_translates(self, array, world=False):
         util.xform.set_translates(self.grp, array, world=world)
 
     def set_rotates(self, array, world=False):

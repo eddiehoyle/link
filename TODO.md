@@ -38,6 +38,7 @@
 - [ ] Write mouth part
 - [x] Write simple control part
 - [ ] Create global control style to not be big quad arrow
+- [ ] Aim polevector of IkRp at center of chain
 
 
 ## Utils

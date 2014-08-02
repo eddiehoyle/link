@@ -13,23 +13,33 @@ class Part(Module):
         self.suffix = "prt"
         self.name = name.set_suffix(self.name, self.suffix)
         self.controls = OrderedDict()
+        self.joints = OrderedDict()
 
         self.offset = {"point": {},
                        "orient": {}}
 
+        self.stretch_nodes = {'adl': [],
+                              'mlt': [],
+                              'div': []}
+
     def _create(self):
+        self.setup_controls()
+        self.setup_settings()
+
+    def setup_controls(self):
         self.create_controls()
         self.match_controls()
         self.connect_controls()
+        self.parent_controls()
 
-    def _post_create(self):
-        super(Part, self)._post_create()
+    def setup_settings(self):
+        self.add_settings()
+        self.parent_settings()
 
+    def parent_settings(self):
         # Parent settings node BEFORE adding shapes
         cmds.parent(cmds.listRelatives(self.settings_node, parent=True)[0], self.top_node)
-
         for key, ctl, in self.controls.items():
-            cmds.parent(ctl.grp, self.top_node)
             cmds.parent(self.settings_node, ctl.ctl, add=True, shape=True)
 
     def set_joints(self, joints):
@@ -51,11 +61,11 @@ class Part(Module):
             util.xform.match_translates(self.controls[key].grp, joint)
 
         # Set custom point at creation time
-        point_offset = self.offset.get("point", {})
-        if point_offset:
-            array = point_offset['array']
-            world = point_offset['world']
-            util.xform.set_translates(self.controls[key].grp, array, world)
+        # point_offset = self.offset.get("point", {})
+        # if point_offset:
+        #     array = point_offset['array']
+        #     world = point_offset['world']
+        #     util.xform.set_translates(self.controls[key].grp, array, world)
 
     def match_rotates(self, target=None):
         """Match each controls groups rotates to it's designated joint"""
@@ -64,13 +74,19 @@ class Part(Module):
             util.xform.match_rotates(self.controls[key].grp, joint)
 
         # Set custom orient at creation time
-        orient_offset = self.offset.get("orient", {})
-        if orient_offset:
-            array = orient_offset['array']
-            world = orient_offset['world']
-            util.xform.set_rotates(self.controls[key].grp, array, world)
+        # orient_offset = self.offset.get("orient", {})
+        # if orient_offset:
+        #     array = orient_offset['array']
+        #     world = orient_offset['world']
+        #     util.xform.set_rotates(self.controls[key].grp, array, world)
+
+    def add_settings(self):
+        pass
 
     def connect_controls(self):
+        pass
+
+    def parent_controls(self):
         pass
 
     def get_control(self, index):
@@ -85,11 +101,11 @@ class Part(Module):
         for key, ctl in self.controls.items():
             ctl.scale_shapes(value)
 
-    def rotate_shapes(self, array, world=False):
+    def rotate_shapes(self, array):
         """Rotate all control shapes"""
 
         for key, ctl in self.controls.items():
-            ctl.rotate_shapes(array, world=world)
+            ctl.rotate_shapes(array)
 
     def set_orient(self, array, world):
         """Set an offset orient to be applied at creation time"""
@@ -116,3 +132,8 @@ class Part(Module):
 
     def add_rotates(self, array):
         pass
+
+    def test_create(self):
+        """Single test creation methods for part"""
+        pass
+
