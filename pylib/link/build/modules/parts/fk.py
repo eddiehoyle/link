@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 
-from link.util import name, xform
+from link.util import name, xform, constraint
 from link.util import common, joint
 from link.util.control.control import Control
 from maya import cmds
@@ -38,19 +39,18 @@ class FkChain(Simple):
 
             self.controls[key].joint = joint
             ctl = self.controls[key]
-            cmds.orientConstraint(ctl.ctl, joint, mo=True)
 
-            # for axis in ["X", "Y", "Z"]:
-            #     cmds.connectAttr("%s.rotate%s" % (self.controls[key].ctl, axis), "%s.rotate%s" % (joint, axis))
-            #     # Add inbetween pma to any existing connections
-            #     pma = cmds.createNode("plusMinusAverage")
-            #     con = cmds.listConnections("%s.rotate%s" % (joint, axis), source=True, destination=False, plugs=True) or []
-            #     if con:
-            #         cmds.disconnectAttr(con[0], "%s.rotate%s" % (joint, axis))
-            #         cmds.connectAttr(con[0], "%s.input3D[0].input3D%s" % (pma, axis.lower()))
-            #         cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()),  "%s.rotate%s" % (joint, axis))
-            #     else:
-            #         cmds.connectAttr("%s.rotate%s" % (ctl.ctl, axis), "%s.rotate%s" % (joint, axis))
+            # This is lazy, fix me later
+            # Trying to detect existing rotatation constraint
+            con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False) or []
+            
+            if con:
+                constraint.extend_constraint(ctl.ctl, con[0])
+            else:
+                cmds.parentConstraint(ctl.ctl, joint, st=['x', 'y', 'z'], mo=True)[0]
+                con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False)
+
+            cmds.setAttr("%s.interpType" % con[0], 2)
 
     def omit_last_control(self):
         """Delete last control"""

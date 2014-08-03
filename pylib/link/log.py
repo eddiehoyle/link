@@ -6,3 +6,4 @@ import logging
 
 logging.basicConfig()
 logger = logging.getLogger('link')
+logger.setLevel(logging.WARNING)

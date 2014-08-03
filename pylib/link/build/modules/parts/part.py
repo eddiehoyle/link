@@ -36,7 +36,10 @@ class Part(Module):
         self.add_settings()
 
     def add_settings(self):
-        pass
+        if not cmds.objExists("%s.helpers" % self.settings_node):
+            cmds.addAttr(self.settings_node, ln="helpers", at='double', dv=0)
+            cmds.setAttr("%s.helpers" % self.settings_node, cb=True)
+            cmds.setAttr("%s.helpers" % self.settings_node, k=False)
 
     def set_joints(self, joints):
         self.joints = joints
@@ -56,14 +59,12 @@ class Part(Module):
         for joint, key in zip(self.joints, self.controls.keys()):
             util.xform.match_translates(self.controls[key].grp, joint)
 
-            # print 'match', key, joint
-
         # Set custom point at creation time
         point_offset = self.offset.get("point", {})
         if point_offset:
-            array = point_offset['array']
+            vector = point_offset['vector']
             world = point_offset['world']
-            util.xform.set_translates(self.controls[key].grp, array, world)
+            util.xform.set_translates(self.controls[key].grp, vector, world)
 
     def match_rotates(self, target=None):
         """Match each controls groups rotates to it's designated joint"""
@@ -74,9 +75,9 @@ class Part(Module):
         # Set custom orient at creation time
         orient_offset = self.offset.get("orient", {})
         if orient_offset:
-            array = orient_offset['array']
+            vector = orient_offset['vector']
             world = orient_offset['world']
-            util.xform.set_rotates(self.controls[key].grp, array, world)
+            util.xform.set_rotates(self.controls[key].grp, vector, world)
 
 
     def connect_controls(self):
@@ -97,22 +98,22 @@ class Part(Module):
         for key, ctl in self.controls.items():
             ctl.scale_shapes(value)
 
-    def rotate_shapes(self, array):
+    def rotate_shapes(self, array, world=False):
         """Rotate all control shapes"""
 
         for key, ctl in self.controls.items():
-            ctl.rotate_shapes(array)
+            ctl.rotate_shapes(array, world=world)
 
-    def set_orient(self, array, world):
+    def set_orient(self, vector, world=True):
         """Set an offset orient to be applied at creation time"""
 
-        self.offset['orient'] = dict(array=array,
+        self.offset['orient'] = dict(vector=vector,
                                      world=world)
 
-    def set_point(self, array):
+    def set_point(self, vector):
         """Set an offset point to be applied at creation time"""
 
-        self.offset['point'] = dict(array=array,
+        self.offset['point'] = dict(vector=vector,
                                     world=world)
 
     def set_translates(self, array):
@@ -122,12 +123,6 @@ class Part(Module):
     def set_rotates(self, array, world=False):
         for key, ctl in self.controls.items():
             util.xform.set_rotates(ctl.grp, array, world=world)
-
-    def add_translates(self, array):
-        pass
-
-    def add_rotates(self, array):
-        pass
 
     def test_create(self):
         """Single test creation methods for part"""

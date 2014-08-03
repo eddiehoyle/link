@@ -1,7 +1,7 @@
 
 from link.config import Config
 from maya import cmds
-from link.util import common
+from link import util
 from link.build.modules.components.skeleton import Skeleton
 from link.build.modules.components.proxy import Proxy
 from link.build.modules.parts.fk import FkChain
@@ -129,18 +129,32 @@ class Link(object):
         self.append_part(part)
 
         part.scale_shapes(8)
-        part.ik.add_polevector("eblow", [0, 0, -40])
-        part.ik.polevector_ctl.scale_shapes(2)
+        part.ik.add_polevector("elbow", [0, 0, -40])
+        part.ik.polevector_ctl.scale_shapes(3)
+        part.ik.polevector_ctl.rotate_shapes([90, 0, 0], world=True)
 
+        # ----------
         # Blend IkFk
-        orient = part.ik.ik_orient
-        aliases = cmds.orientConstraint(orient, q=True, wal=True)
-        rev = cmds.createNode("reverse")
-        cmds.connectAttr("%s.fkik" % part.settings_node, "%s.inputX" % rev)
-        cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (orient, aliases[1]))
-        cmds.connectAttr("%s.fkik" % part.settings_node, "%s.%s" % (orient, aliases[0]))
+        util.part.connect_ikfk(part)
+        # orient = part.ik.ik_orient
+        # aliases = cmds.parentConstraint(orient, q=True, wal=True)
 
-        # common.blend_attributes("%s.%s" % (orient, aliases[0]), "%s.%s" % (orient, aliases[1]), "%s.fkik" % part.settings_node)
+        # rev = cmds.createNode("reverse")
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.inputX" % rev)
+
+        # # Drive swap
+        # cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (orient, aliases[1]))
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.%s" % (orient, aliases[0]))
+
+        # # Fk control vis
+        # for fk_key, fk_ctl in part.fk.controls.items():
+        #     cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_ctl.grp)
+
+        # # Ik control vis
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.ik_ctl.grp)
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.polevector_ctl.grp)
+
+
 
     def create_leg(self, position):
         part = IkFk(position, 'leg')
@@ -149,10 +163,31 @@ class Link(object):
         part.create()
         self.append_part(part)
 
-        part.scale_shapes(8)
+        part.scale_shapes(10)
         part.ik.add_polevector("knee", [0, 0, 40])
-        part.ik.polevector_ctl.scale_shapes(2)
+        part.ik.polevector_ctl.scale_shapes(3)
+        part.ik.polevector_ctl.rotate_shapes([-90, 0, 0], world=True)
 
+        # ----------
+        # Blend IkFk
+        util.part.connect_ikfk(part)
+        # orient = part.ik.ik_orient
+        # aliases = cmds.parentConstraint(orient, q=True, wal=True)
+
+        # rev = cmds.createNode("reverse")
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.inputX" % rev)
+
+        # # Drive swap
+        # cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (orient, aliases[1]))
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.%s" % (orient, aliases[0]))
+
+        # # Fk control vis
+        # for fk_key, fk_ctl in part.fk.controls.items():
+        #     cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_ctl.grp)
+        
+        # # Ik control vis
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.ik_ctl.grp)
+        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.polevector_ctl.grp)
 
     def create_hip(self):
         part = Simple('C', 'hip')

@@ -24,9 +24,9 @@
 ## Parts
 - [x] Write Fk part
 - [x] Write FkChain part
-- [x] Add Fk base stretch logic
+- [ ] Add Fk stretch logic
 - [x] Write Ik part
-- [x] Write Ik stretch
+- [ ] Write Ik stretch
 - [x] Add settings to proxy component
 - [x] Add settings to skeleton component
 - [x] Write IkFkChain part

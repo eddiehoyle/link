@@ -19,11 +19,16 @@ class IkFk(Part):
         self.fk = FkChain(position, description)
 
     def add_settings(self):
+        super(IkFk, self).add_settings()
+
         cmds.addAttr(self.settings_node, ln="fkik", at="double", min=0, max=1, dv=1)
         cmds.setAttr("%s.fkik" % self.settings_node, cb=True)
         cmds.setAttr("%s.fkik" % self.settings_node, k=True)
-
         cmds.connectAttr("%s.fkik" % self.settings_node, "%s.ikBlend" % self.ik.ik)
+
+        print 'add', self.ik.settings_node
+        self.ik.add_settings()
+        self.fk.add_settings()
 
     def test_create(self, joints=None):
         cmds.file(new=True, force=True)
@@ -36,7 +41,7 @@ class IkFk(Part):
         self.ik.controls['L_elbow_0_ctl'].rotate_shapes([90, 0, 0])
         self.ik.controls['L_elbow_0_ctl'].scale_shapes(0.3)
 
-        self.ik.add_stretch()
+        # self.ik.add_stretch()
         # self.fk.add_stretch()
 
 
@@ -99,6 +104,10 @@ class IkFk(Part):
 
         self.ik.top_node = self.top_node
         self.fk.top_node = self.top_node
+        self.ik.settings_node = self.settings_node
+        self.fk.settings_node = self.settings_node
+        print 'pre', self.ik.settings_node
+
 
     def _post_create(self):
         super(IkFk, self)._post_create()

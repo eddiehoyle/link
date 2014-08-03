@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 
-from link.util import name, xform
+from link.util import name, xform, joint
 from link.util import common, vector, joint
 from link.util.control.control import Control
 from maya import cmds
@@ -40,7 +41,10 @@ class IkSc(Part):
         # Create control
         ctl = Control(self.position, self.description)
         ctl.create()
+
+        # Style and lock attrs
         ctl.set_style("cube")
+        ctl.lock_scales()
 
         # Append control
         self.controls[ctl.name] = ctl
@@ -49,34 +53,48 @@ class IkSc(Part):
         return self.controls
 
     def match_controls(self):
+        """Ik only has a single control"""
 
         # Match IK Handle to end joint
-        for key in self.controls.keys():
-            xform.match(self.controls[key].grp, self.joints[-1])
+        xform.match_translates(self.ik_ctl.grp, self.joints[-1])
+
+        # Apply orient offset if found to ik control
+        orient_offset = self.offset.get("orient", {})
+        if orient_offset:
+            self.ik_ctl.set_orient_offset(orient_offset['vector'], orient_offset['world'])
+
+        # Apply point offset if found to ik control
+        point_offset = self.offset.get("point", {})
+        if point_offset:
+            self.ik_ctl.set_point_offset(point_offset['vector'], point_offset['world'])
 
     def connect_controls(self):
 
         # Parent IK handle under ctl
         cmds.parent(self.ik, self.ik_ctl.ctl)
-        self.ik_orient = cmds.orientConstraint(self.ik_ctl.ctl, self.joints[-1], mo=True)[0]
 
-        # Add inbetween pma to any existing connections
-        # pma = cmds.createNode("plusMinusAverage")
-        # for axis in ["X", "Y", "Z"]:
-        #     con = cmds.listConnections("%s.rotate%s" % (self.joints[-1], axis), source=True, destination=False, plugs=True) or []
+        joint = self.joints[-1]
+        self.ik_ctl.joint = joint
+        ctl = self.ik_ctl
 
-        #     if con:
-        #         cmds.disconnectAttr(con[0], "%s.rotate%s" % (self.joints[-1], axis))
-        #         cmds.connectAttr(con[0], "%s.input3D[0].input3D%s" % (pma, axis.lower()))
-        #         cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()),  "%s.rotate%s" % (joint, axis))
-        #     else:
-        #         cmds.connectAttr("%s.rotate%s" % (self.ik_ctl.ctl, axis), "%s.rotate%s" % (self.joints[-1], axis))
+        # This is lazy, fix me later
+        # Trying to detect existing rotatation constraint
+        con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False) or []
+        
+        if con:
+            constraint.extend_constraint(ctl.ctl, con[0])
+
+        else:
+            cmds.parentConstraint(ctl.ctl, joint, st=['x', 'y', 'z'], mo=True)[0]
+            con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False)
+
+        cmds.setAttr("%s.interpType" % con[0], 2)
+        self.ik_orient = con[0]
 
 
 
     def parent_controls(self):
-        for key, ctl in self.controls.items():
-            cmds.parent(ctl.grp, self.top_node)
+        cmds.parent(self.ik_ctl.grp, self.top_node)
 
     def add_stretch(self):
         """Drive joints by translateX and distance between start and end"""
@@ -125,6 +143,10 @@ class IkSc(Part):
         # Store important nodes
         self.stretch_nodes.update({'out_mlt': out_mlt,
                                    'div_mlt': div_mlt})
+
+    def add_settings(self):
+        super(IkSc, self).add_settings()
+        cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % self.ik)
 
     def test_create(self):
         cmds.file(new=True, force=True)
@@ -187,7 +209,7 @@ class IkRp(IkSc):
 
         # Move into position
         cmds.xform(ctl.grp, t=middle_pos, ws=True)
-        cmds.xform(ctl.grp, ro=middle_rot, ws=True)
+        # cmds.xform(ctl.grp, ro=middle_rot, ws=True)
 
         # Create poleVector
         cmds.poleVectorConstraint(ctl.ctl, self.ik, weight=True)

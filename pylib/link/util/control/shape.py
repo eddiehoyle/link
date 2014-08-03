@@ -73,14 +73,14 @@ class Shape(object):
 
         self.scale = value
 
-    def rotate_shapes(self, vector):
-        """Rotate shape"""
+    def rotate_shapes(self, vector, world=False):
+        """Rotate shapes"""
 
         # Match rotate pivot of transform
         for shape in self.nodes:
             spans = cmds.getAttr("%s.spans" % shape) + 1
             cvs = cmds.ls("%s.cv[0:%s]" % (shape, spans), r=True)
-            cmds.xform(cvs, ro=vector, r=True)
+            cmds.xform(cvs, ro=vector, r=True, ws=world, os=not world)
         self.rotate = vector
 
     def set_color(self, position):

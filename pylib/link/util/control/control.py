@@ -54,8 +54,8 @@ class Control(object):
     def scale_shapes(self, value):
         self._shape.scale_shapes(value)
 
-    def rotate_shapes(self, value):
-        self._shape.rotate_shapes(value)
+    def rotate_shapes(self, value, world=False):
+        self._shape.rotate_shapes(value, world=world)
 
     def lock_translates(self):
         util.attr.lock_translates(self.ctl)
@@ -78,13 +78,8 @@ class Control(object):
     def set_rotates(self, array, world=False):
         util.xform.set_rotates(self.grp, array, world=world)
 
-    def add_translates(self, array):
-        pass
+    def set_point_offset(self, vector, world=False):
+        util.xform.set_translates(self.grp, vector, world=world)
 
-    def add_rotates(self, array):
-        pass
-
-
-
-
-
+    def set_orient_offset(self, vector, world=False):
+        util.xform.set_rotates(self.grp, vector, world=world)
