@@ -37,7 +37,7 @@ class IkFk(Part):
         self.ik.controls['L_elbow_0_ctl'].scale_shapes(0.3)
 
         self.ik.add_stretch()
-        self.fk.add_stretch()
+        # self.fk.add_stretch()
 
 
         # ------------------ #

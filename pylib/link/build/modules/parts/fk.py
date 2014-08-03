@@ -5,6 +5,9 @@ from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.simple import Simple
 
+import logging
+log = logging.getLogger(__name__)
+
 class FkChain(Simple):
     """Hierarchical FK chain"""
 
@@ -30,18 +33,31 @@ class FkChain(Simple):
 
     def connect_controls(self):
         """Connect controls"""
+
         for key, joint in zip(self.controls.keys(), self.joints):
 
             self.controls[key].joint = joint
+            ctl = self.controls[key]
+            cmds.orientConstraint(ctl.ctl, joint, mo=True)
 
-            for axis in ["X", "Y", "Z"]:
-                cmds.connectAttr("%s.rotate%s" % (self.controls[key].ctl, axis), "%s.rotate%s" % (joint, axis))
+            # for axis in ["X", "Y", "Z"]:
+            #     cmds.connectAttr("%s.rotate%s" % (self.controls[key].ctl, axis), "%s.rotate%s" % (joint, axis))
+            #     # Add inbetween pma to any existing connections
+            #     pma = cmds.createNode("plusMinusAverage")
+            #     con = cmds.listConnections("%s.rotate%s" % (joint, axis), source=True, destination=False, plugs=True) or []
+            #     if con:
+            #         cmds.disconnectAttr(con[0], "%s.rotate%s" % (joint, axis))
+            #         cmds.connectAttr(con[0], "%s.input3D[0].input3D%s" % (pma, axis.lower()))
+            #         cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()),  "%s.rotate%s" % (joint, axis))
+            #     else:
+            #         cmds.connectAttr("%s.rotate%s" % (ctl.ctl, axis), "%s.rotate%s" % (joint, axis))
 
     def omit_last_control(self):
         """Delete last control"""
 
         if self.controls:
             last = self.get_control(-1)
+            log.warning("Omitting last FK control: %s" % last.name)
             cmds.delete(last.grp)
             del self.controls[last.name]
 

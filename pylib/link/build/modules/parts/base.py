@@ -16,7 +16,7 @@ class Base(Simple):
 
         ctl = Control("C", "global")
         ctl.create()
-        ctl.set_style("arrow_quad")
+        ctl.set_style("square")
 
         self.controls[ctl.name] = ctl
 

@@ -34,13 +34,9 @@ class Part(Module):
 
     def setup_settings(self):
         self.add_settings()
-        self.parent_settings()
 
-    def parent_settings(self):
-        # Parent settings node BEFORE adding shapes
-        cmds.parent(cmds.listRelatives(self.settings_node, parent=True)[0], self.top_node)
-        for key, ctl, in self.controls.items():
-            cmds.parent(self.settings_node, ctl.ctl, add=True, shape=True)
+    def add_settings(self):
+        pass
 
     def set_joints(self, joints):
         self.joints = joints
@@ -60,12 +56,14 @@ class Part(Module):
         for joint, key in zip(self.joints, self.controls.keys()):
             util.xform.match_translates(self.controls[key].grp, joint)
 
+            # print 'match', key, joint
+
         # Set custom point at creation time
-        # point_offset = self.offset.get("point", {})
-        # if point_offset:
-        #     array = point_offset['array']
-        #     world = point_offset['world']
-        #     util.xform.set_translates(self.controls[key].grp, array, world)
+        point_offset = self.offset.get("point", {})
+        if point_offset:
+            array = point_offset['array']
+            world = point_offset['world']
+            util.xform.set_translates(self.controls[key].grp, array, world)
 
     def match_rotates(self, target=None):
         """Match each controls groups rotates to it's designated joint"""
@@ -74,14 +72,12 @@ class Part(Module):
             util.xform.match_rotates(self.controls[key].grp, joint)
 
         # Set custom orient at creation time
-        # orient_offset = self.offset.get("orient", {})
-        # if orient_offset:
-        #     array = orient_offset['array']
-        #     world = orient_offset['world']
-        #     util.xform.set_rotates(self.controls[key].grp, array, world)
+        orient_offset = self.offset.get("orient", {})
+        if orient_offset:
+            array = orient_offset['array']
+            world = orient_offset['world']
+            util.xform.set_rotates(self.controls[key].grp, array, world)
 
-    def add_settings(self):
-        pass
 
     def connect_controls(self):
         pass

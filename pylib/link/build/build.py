@@ -1,10 +1,11 @@
 
 from link.config import Config
 from maya import cmds
+from link.util import common
 from link.build.modules.components.skeleton import Skeleton
 from link.build.modules.components.proxy import Proxy
-from link.build.modules.parts.fk import FkChain, Fk
-from link.build.modules.parts.ik import Ik
+from link.build.modules.parts.fk import FkChain
+from link.build.modules.parts.ik import IkRp
 from link.build.modules.parts.simple import Simple
 from link.build.modules.parts.base import Base
 from link.build.modules.parts.ikfk import IkFk
@@ -47,6 +48,7 @@ class Link(object):
     def _post_build(self):
         self._parent_parts()
         self._parent_components()
+        self._parent_settings()
 
     def build(self):
         log.info('build')
@@ -67,13 +69,22 @@ class Link(object):
         log.info("Parenting %s part(s)" % len(self.parts.keys()))
         for key, part in self.parts.items():
             cmds.parent(part.top_node, self.part_node)
-            cmds.parent(cmds.listRelatives(part.settings_node, parent=True)[0], self.settings_node)
 
     def _parent_components(self):
         log.info("Parenting %s component(s)" % len(self.components.keys()))
         for key, comp in self.components.items():
             cmds.parent(comp.top_node, self.comp_node)
+            
+
+    def _parent_settings(self):
+        for key, comp in self.components.items():
             cmds.parent(cmds.listRelatives(comp.settings_node, parent=True)[0], self.settings_node)
+
+        for key, part in self.parts.items():
+            cmds.parent(cmds.listRelatives(part.settings_node, parent=True)[0], self.settings_node)
+
+            for ctl_key, ctl in part.controls.items():
+                cmds.parent(part.settings_node, ctl.ctl, shape=True, add=True)
 
     def create_skeleton(self):
         component = Skeleton('C', 'skeleton')
@@ -99,36 +110,49 @@ class Link(object):
         part.scale_shapes(12)
 
     def create_collar(self, position):
-        part = IkFk(position, 'collar')
+        part = FkChain(position, 'collar')
         joints = ["%s_collar_0_jnt" % position, "%s_arm_0_jnt" % position]
         part.set_joints(joints)
         part.create()
+        part.omit_last_control()
         self.append_part(part)
 
-        part.scale_shapes(1)
-        part.add_stretch()
+        part.scale_shapes(4)
+        part.rotate_shapes([0, 0, 90])
+        # part.add_stretch()
 
     def create_arm(self, position):
-        part = FkChain(position, 'arm')
+        part = IkFk(position, 'arm')
         joints = ["%s_arm_%s_jnt" % (position, index) for index in range(3)]
         part.set_joints(joints)
         part.create()
         self.append_part(part)
 
         part.scale_shapes(8)
-        part.rotate_shapes([0, 0, 90])
-        part.add_stretch()
+        part.ik.add_polevector("eblow", [0, 0, -40])
+        part.ik.polevector_ctl.scale_shapes(2)
+
+        # Blend IkFk
+        orient = part.ik.ik_orient
+        aliases = cmds.orientConstraint(orient, q=True, wal=True)
+        rev = cmds.createNode("reverse")
+        cmds.connectAttr("%s.fkik" % part.settings_node, "%s.inputX" % rev)
+        cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (orient, aliases[1]))
+        cmds.connectAttr("%s.fkik" % part.settings_node, "%s.%s" % (orient, aliases[0]))
+
+        # common.blend_attributes("%s.%s" % (orient, aliases[0]), "%s.%s" % (orient, aliases[1]), "%s.fkik" % part.settings_node)
 
     def create_leg(self, position):
-        part = FkChain(position, 'leg')
+        part = IkFk(position, 'leg')
         joints = ["%s_leg_%s_jnt" % (position, index) for index in range(3)]
         part.set_joints(joints)
         part.create()
         self.append_part(part)
 
         part.scale_shapes(8)
-        part.rotate_shapes([90, 0, 0])
-        part.add_stretch()
+        part.ik.add_polevector("knee", [0, 0, 40])
+        part.ik.polevector_ctl.scale_shapes(2)
+
 
     def create_hip(self):
         part = Simple('C', 'hip')

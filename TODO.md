@@ -5,6 +5,12 @@
 - [ ] Add more readmes
 
 
+## Current issues
+- [ ] Expose smarter get_control() at part level
+- [ ] Expose per control grp offset functionality before build time
+- [ ] Expose per control shape offset functionality after build time
+
+
 ## Fundamental
 - [x] Split part creation so multi-parts can be made easier
 - [ ] Write test create methods for parts
@@ -23,13 +29,12 @@
 - [x] Write Ik stretch
 - [x] Add settings to proxy component
 - [x] Add settings to skeleton component
-- [ ] Write IkFkChain part
+- [x] Write IkFkChain part
 - [x] Expose orient and point offsets to parts at creation time
 - [x] Store control creation order to know first, last, etc
 - [x] Add settings group
 - [ ] Write a twist deformer part
 - [x] Write a global part (named Base case global is reserved)
-- [ ] Write Ik limb part
 - [ ] Write spine part
 - [ ] Write foot part
 - [ ] Write multi part (combine parts?)

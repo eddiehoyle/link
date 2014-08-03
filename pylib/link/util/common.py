@@ -50,3 +50,12 @@ def get_distance(start, end):
     cmds.delete([loc_start, loc_end, dst_node])
 
     return distance
+
+def blend_attributes(input1, input2, driver):
+    """Create blend node with inputs and driver attr"""
+
+    bc = cmds.createNode('blendColors')
+    cmds.connectAttr(input1, "%s.color1R" % bc)
+    cmds.connectAttr(input2, "%s.color2R" % bc)
+    cmds.connectAttr(driver, "%s.blender" % bc)
+    return bc

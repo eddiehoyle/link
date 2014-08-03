@@ -16,8 +16,13 @@ class IkSc(Part):
         self.description = "%sIk" % description
         self.name = name.set_description(self.name, self.description)
 
+        # Important nodes
         self.ik = None
         self.effector = None
+
+        # Important ctls
+        self.polevector_ctl = None
+        self.ik_ctl = None
 
     def create_ik(self):
         """Ik handle"""
@@ -39,6 +44,7 @@ class IkSc(Part):
 
         # Append control
         self.controls[ctl.name] = ctl
+        self.ik_ctl = ctl
 
         return self.controls
 
@@ -51,7 +57,22 @@ class IkSc(Part):
     def connect_controls(self):
 
         # Parent IK handle under ctl
-        cmds.parent(self.ik, self.controls[self.controls.keys()[0]].ctl)
+        cmds.parent(self.ik, self.ik_ctl.ctl)
+        self.ik_orient = cmds.orientConstraint(self.ik_ctl.ctl, self.joints[-1], mo=True)[0]
+
+        # Add inbetween pma to any existing connections
+        # pma = cmds.createNode("plusMinusAverage")
+        # for axis in ["X", "Y", "Z"]:
+        #     con = cmds.listConnections("%s.rotate%s" % (self.joints[-1], axis), source=True, destination=False, plugs=True) or []
+
+        #     if con:
+        #         cmds.disconnectAttr(con[0], "%s.rotate%s" % (self.joints[-1], axis))
+        #         cmds.connectAttr(con[0], "%s.input3D[0].input3D%s" % (pma, axis.lower()))
+        #         cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()),  "%s.rotate%s" % (joint, axis))
+        #     else:
+        #         cmds.connectAttr("%s.rotate%s" % (self.ik_ctl.ctl, axis), "%s.rotate%s" % (self.joints[-1], axis))
+
+
 
     def parent_controls(self):
         for key, ctl in self.controls.items():
@@ -171,6 +192,7 @@ class IkRp(IkSc):
         # Create poleVector
         cmds.poleVectorConstraint(ctl.ctl, self.ik, weight=True)
 
+        self.polevector_ctl = ctl
         self.controls[ctl.name] = ctl
 
     def test_create(self):
