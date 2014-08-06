@@ -84,7 +84,8 @@ class Part(Module):
         pass
 
     def parent_controls(self):
-        pass
+        for key, ctl in self.controls.items():
+            cmds.parent(ctl.grp, self.top_node)
 
     def get_control(self, index):
         try:

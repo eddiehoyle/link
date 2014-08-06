@@ -34,7 +34,7 @@ class Link(object):
 
         # Components
         self.create_skeleton()
-        self.create_proxy()
+        # self.create_proxy()
 
         # Parts
         self.create_root()
@@ -74,7 +74,6 @@ class Link(object):
         log.info("Parenting %s component(s)" % len(self.components.keys()))
         for key, comp in self.components.items():
             cmds.parent(comp.top_node, self.comp_node)
-            
 
     def _parent_settings(self):
         for key, comp in self.components.items():
@@ -111,7 +110,7 @@ class Link(object):
 
     def create_collar(self, position):
         part = FkChain(position, 'collar')
-        joints = ["%s_collar_0_jnt" % position, "%s_arm_0_jnt" % position]
+        joints = ["%s_collar_0_jnt" % position]
         part.set_joints(joints)
         part.create()
         part.omit_last_control()
@@ -119,7 +118,6 @@ class Link(object):
 
         part.scale_shapes(4)
         part.rotate_shapes([0, 0, 90])
-        # part.add_stretch()
 
     def create_arm(self, position):
         part = IkFk(position, 'arm')
@@ -129,32 +127,6 @@ class Link(object):
         self.append_part(part)
 
         part.scale_shapes(8)
-        part.ik.add_polevector("elbow", [0, 0, -40])
-        part.ik.polevector_ctl.scale_shapes(3)
-        part.ik.polevector_ctl.rotate_shapes([90, 0, 0], world=True)
-
-        # ----------
-        # Blend IkFk
-        util.part.connect_ikfk(part)
-        # orient = part.ik.ik_orient
-        # aliases = cmds.parentConstraint(orient, q=True, wal=True)
-
-        # rev = cmds.createNode("reverse")
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.inputX" % rev)
-
-        # # Drive swap
-        # cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (orient, aliases[1]))
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.%s" % (orient, aliases[0]))
-
-        # # Fk control vis
-        # for fk_key, fk_ctl in part.fk.controls.items():
-        #     cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_ctl.grp)
-
-        # # Ik control vis
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.ik_ctl.grp)
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.polevector_ctl.grp)
-
-
 
     def create_leg(self, position):
         part = IkFk(position, 'leg')
@@ -164,30 +136,6 @@ class Link(object):
         self.append_part(part)
 
         part.scale_shapes(10)
-        part.ik.add_polevector("knee", [0, 0, 40])
-        part.ik.polevector_ctl.scale_shapes(3)
-        part.ik.polevector_ctl.rotate_shapes([-90, 0, 0], world=True)
-
-        # ----------
-        # Blend IkFk
-        util.part.connect_ikfk(part)
-        # orient = part.ik.ik_orient
-        # aliases = cmds.parentConstraint(orient, q=True, wal=True)
-
-        # rev = cmds.createNode("reverse")
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.inputX" % rev)
-
-        # # Drive swap
-        # cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (orient, aliases[1]))
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.%s" % (orient, aliases[0]))
-
-        # # Fk control vis
-        # for fk_key, fk_ctl in part.fk.controls.items():
-        #     cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_ctl.grp)
-        
-        # # Ik control vis
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.ik_ctl.grp)
-        # cmds.connectAttr("%s.fkik" % part.settings_node, "%s.visibility" % part.ik.polevector_ctl.grp)
 
     def create_hip(self):
         part = Simple('C', 'hip')

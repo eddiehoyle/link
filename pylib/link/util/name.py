@@ -19,7 +19,7 @@ def generate_name(position, description, index=0, suffix="grp"):
 
     name = create_name(position, description, index, suffix)
     while cmds.objExists(name):
-        index += 1
+        index = int(index) + 1
         name = create_name(position, description, index, suffix)
     return name
 
@@ -80,8 +80,6 @@ def set_description_suffix(name, description_suffix):
     description = get_description(name)
     description += description_suffix.capitalize()
     return set_description(name, description)
-
-
 
 #--------------------------------------------#
 # Dunno if I wanna use this class or not yet

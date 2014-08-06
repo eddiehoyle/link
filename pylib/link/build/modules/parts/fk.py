@@ -2,6 +2,7 @@
 
 from link.util import name, xform, constraint
 from link.util import common, joint
+from link import util
 from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.simple import Simple
@@ -16,17 +17,28 @@ class FkChain(Simple):
         super(FkChain, self).__init__(position, description)
 
         self.description = "%sFk" % description
+        
+        # Fk joints
+        self.fk_joints = []
+
+    def _duplicate_joints(self):
+        """Create a duplicate FK joint chain to drive rig"""
+
+        # Create new joints
+        self.fk_joints = util.joint.duplicate_joints(self.joints, "fk")
 
     def create_controls(self):
         """Create controls"""
+
+        # Create duplicate joint chain
+        self._duplicate_joints()
+
+        # Create simple controls
         super(FkChain, self).create_controls()
 
         for key, ctl in self.controls.items():
-
-            # Fk circles
             ctl.set_style("circle")
 
-            # Lock transforms
             ctl.lock_translates()
             ctl.lock_scales()
 
@@ -35,22 +47,32 @@ class FkChain(Simple):
     def connect_controls(self):
         """Connect controls"""
 
-        for key, joint in zip(self.controls.keys(), self.joints):
+        # Connect controls to fk joints
+        for key, src_jnt, fk_jnt in zip(self.controls.keys(), self.joints, self.fk_joints):
 
-            self.controls[key].joint = joint
             ctl = self.controls[key]
+            for attr in ["translate", "rotate"]:
+                count = 0
+                pma = cmds.createNode("plusMinusAverage")
+                for axis in ["X", "Y", "Z"]:
+                    val = cmds.getAttr("%s.%s%s" % (fk_jnt, attr, axis))
+                    
+                    # cmds.connectAttr("%s.%s%s" % (ctl.ctl, attr, axis), "%s.%s%s" % (fk_jnt, attr, axis))
 
-            # This is lazy, fix me later
-            # Trying to detect existing rotatation constraint
-            con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False) or []
+                    cmds.connectAttr("%s.%s%s" % (ctl.ctl, attr, axis), "%s.input3D[%s].input3D%s" % (pma, count, axis.lower()))
+                    cmds.setAttr("%s.input3D[%s].input3D%s" % (pma, count + 1, axis.lower()), val)
+                    cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.%s%s" % (fk_jnt, attr, axis))
+
+                count += 1
             
-            if con:
-                constraint.extend_constraint(ctl.ctl, con[0])
-            else:
-                cmds.parentConstraint(ctl.ctl, joint, st=['x', 'y', 'z'], mo=True)[0]
-                con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False)
-
+            con = cmds.parentConstraint(fk_jnt, src_jnt, mo=True)
             cmds.setAttr("%s.interpType" % con[0], 2)
+
+            # Store attrs
+            
+            ctl.fk_joint = fk_jnt
+            ctl.joint = src_jnt
+            ctl.constraint = con[0]
 
     def omit_last_control(self):
         """Delete last control"""
@@ -130,7 +152,7 @@ class FkChain(Simple):
 
     def test_create(self):
         cmds.file(new=True, force=True)
-        jnts = joint.create_chain(3, 'X', 4)
+        jnts = joint.create_chain(3, 'X', 4, 'temp')
 
         self.set_joints(jnts)
         self.create()

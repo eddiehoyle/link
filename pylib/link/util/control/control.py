@@ -24,6 +24,9 @@ class Control(object):
 
         self.joint = None
 
+    def __setattr__(self, attr, value):
+        super(Control, self).__setattr__(attr, value)
+
     @property
     def ctl(self):
         return self._transform.node

@@ -1,7 +1,7 @@
 
 from link.util import name, attr, anno
 from maya import cmds
-import logging
+from functools import partial
 import logging
 log = logging.getLogger(__name__)
 
@@ -59,3 +59,4 @@ class Module(object):
 
     def connect_settings(self):
         pass
+

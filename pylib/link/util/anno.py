@@ -29,7 +29,6 @@ def add(source, string):
     """Add to node"""
 
     transform, anno = create(string)
-    print anno, source
     cmds.parent(anno, source, shape=True, relative=True)
     cmds.delete(transform)
     target = cmds.listRelatives(source, shapes=True)[0]

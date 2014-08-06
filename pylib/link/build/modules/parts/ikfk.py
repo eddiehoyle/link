@@ -26,7 +26,6 @@ class IkFk(Part):
         cmds.setAttr("%s.fkik" % self.settings_node, k=True)
         cmds.connectAttr("%s.fkik" % self.settings_node, "%s.ikBlend" % self.ik.ik)
 
-        print 'add', self.ik.settings_node
         self.ik.add_settings()
         self.fk.add_settings()
 
@@ -36,10 +35,6 @@ class IkFk(Part):
         joints = joint.create_chain(3, "X", 3)
         self.set_joints(joints)
         self.create()
-
-        self.ik.add_polevector('elbow', [0, 0, -4])
-        self.ik.controls['L_elbow_0_ctl'].rotate_shapes([90, 0, 0])
-        self.ik.controls['L_elbow_0_ctl'].scale_shapes(0.3)
 
         # self.ik.add_stretch()
         # self.fk.add_stretch()
@@ -76,8 +71,7 @@ class IkFk(Part):
         ik_controls = self.ik.create_controls()
         fk_controls = self.fk.create_controls()
 
-        # Remove extra 'shoulder' fk control that will be created
-        # self.fk.omit_last_control()
+        pv = self.ik.add_polevector()
 
         self.fk.rotate_shapes([0, 0, 90])
         self.fk.scale_shapes(1)
@@ -106,14 +100,12 @@ class IkFk(Part):
         self.fk.top_node = self.top_node
         self.ik.settings_node = self.settings_node
         self.fk.settings_node = self.settings_node
-        print 'pre', self.ik.settings_node
 
+    # def _post_create(self):
+    #     super(IkFk, self)._post_create()
 
-    def _post_create(self):
-        super(IkFk, self)._post_create()
-
-        self.ik.parent_controls()
-        self.fk.parent_controls()
+    #     self.ik.parent_controls()
+    #     self.fk.parent_controls()
 
 
 
