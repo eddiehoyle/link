@@ -76,14 +76,15 @@ class Link(object):
             cmds.parent(comp.top_node, self.comp_node)
 
     def _parent_settings(self):
-        for key, comp in self.components.items():
-            cmds.parent(cmds.listRelatives(comp.settings_node, parent=True)[0], self.settings_node)
+        pass
+        # for key, comp in self.components.items():
+        #     cmds.parent(cmds.listRelatives(comp.settings_node, parent=True)[0], self.settings_node)
 
-        for key, part in self.parts.items():
-            cmds.parent(cmds.listRelatives(part.settings_node, parent=True)[0], self.settings_node)
+        # for key, part in self.parts.items():
+            # cmds.parent(cmds.listRelatives(part.settings_node, parent=True)[0], self.settings_node)
 
-            for ctl_key, ctl in part.controls.items():
-                cmds.parent(part.settings_node, ctl.ctl, shape=True, add=True)
+            # for ctl_key, ctl in part.controls.items():
+            #     cmds.parent(part.settings_node, ctl.ctl, shape=True, add=True)
 
     def create_skeleton(self):
         component = Skeleton('C', 'skeleton')
@@ -124,6 +125,7 @@ class Link(object):
         joints = ["%s_arm_%s_jnt" % (position, index) for index in range(3)]
         part.set_joints(joints)
         part.create()
+        part.add_stretch()
         self.append_part(part)
 
         part.scale_shapes(8)
@@ -133,6 +135,7 @@ class Link(object):
         joints = ["%s_leg_%s_jnt" % (position, index) for index in range(3)]
         part.set_joints(joints)
         part.create()
+        part.add_stretch()
         self.append_part(part)
 
         part.scale_shapes(10)
@@ -141,7 +144,7 @@ class Link(object):
         part = Simple('C', 'hip')
         part.set_joints(["C_spine_0_jnt"])
         part.set_orient([0, 0, 0], world=True)
-        part.create()        
+        part.create()  
         self.append_part(part)
 
         part.scale_shapes(6)

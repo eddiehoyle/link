@@ -22,6 +22,12 @@ class Part(Module):
                               'mlt': [],
                               'div': []}
 
+    def _post_create(self):
+        super(Part, self)._post_create()
+
+        for ctl_key, ctl in self.controls.items():
+            cmds.parent(self.settings_node, ctl.ctl, shape=True, add=True)
+
     def _create(self):
         self.setup_controls()
         self.setup_settings()
@@ -34,12 +40,16 @@ class Part(Module):
 
     def setup_settings(self):
         self.add_settings()
+        self.connect_settings()
 
     def add_settings(self):
         if not cmds.objExists("%s.helpers" % self.settings_node):
             cmds.addAttr(self.settings_node, ln="helpers", at='double', dv=0)
             cmds.setAttr("%s.helpers" % self.settings_node, cb=True)
             cmds.setAttr("%s.helpers" % self.settings_node, k=False)
+
+    def connect_settings(self):
+        pass
 
     def set_joints(self, joints):
         self.joints = joints

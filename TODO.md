@@ -13,7 +13,7 @@
 
 ## Fundamental
 - [x] Split part creation so multi-parts can be made easier
-- [ ] Write test create methods for parts
+- [x] Write test create methods for parts
 - [ ] Write secondary (deformer) part logic
 - [x] Add settings node
 - [ ] Get config working
@@ -24,9 +24,9 @@
 ## Parts
 - [x] Write Fk part
 - [x] Write FkChain part
-- [ ] Add Fk stretch logic
+- [x] Add Fk stretch logic
 - [x] Write Ik part
-- [ ] Write Ik stretch
+- [x] Write Ik stretch
 - [x] Add settings to proxy component
 - [x] Add settings to skeleton component
 - [x] Write IkFkChain part
@@ -51,7 +51,7 @@
 - [ ] Tidy up util.name 
 - [ ] Tidy up util.attr
 - [ ] Add vector utils
-- [ ] Add joint utils for easy joint creation for test methods
+- [x] Add joint utils for easy joint creation for test methods
 
 
 ## Build

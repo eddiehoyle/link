@@ -41,6 +41,11 @@ def duplicate_joints(joints, description_suffix):
     for jnt in new_jnts:
         util.shape.add_shape(jnt)
 
-    cmds.parent(new_jnts[0], world=True)
+    # Joints may already be at world level
+    try:
+        cmds.parent(new_jnts[0], world=True)
+    except RuntimeError as e:
+        pass
+
 
     return new_jnts

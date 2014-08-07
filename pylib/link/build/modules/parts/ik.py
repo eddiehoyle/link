@@ -38,9 +38,6 @@ class IkSc(Part):
         # Connect fk jnts to source joints
         for ik_jnt, src_jnt in zip(self.ik_joints, self.joints):
             cmds.parentConstraint(ik_jnt, src_jnt, mo=True)
-            # for attr in ["translate", "rotate"]:
-            #     for axis in ["X", "Y", "Z"]:
-            #         cmds.connectAttr("%s.%s%s" % (ik_jnt, attr, axis), "%s.%s%s" % (src_jnt, attr, axis))
 
     def create_ik(self):
         """Ik handle"""
@@ -136,16 +133,16 @@ class IkSc(Part):
         cmds.connectAttr("%s.outColorR" % cond, "%s.input2X" % div_mlt)
 
         # Detect positive or negative X value
-        mult = 1
-        start_x = cmds.getAttr("%s.translateX" % loc_start)
-        end_x = cmds.getAttr("%s.translateX" % loc_end)
-        if end_x - start_x < 0:
-            mult = -1
+        # cmds.getAttr("%s.translateX" % loc_end)
+        # start_x = cmds.getAttr("%s.translateX" % loc_start)
+        # end_x = cmds.getAttr("%s.translateX" % loc_end)
+        # if end_x - start_x < 0:
+        #     mult = -1
 
         # Connect logic
         out_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(self.name, "outMlt"))
         cmds.connectAttr("%s.outputX" % div_mlt, "%s.input2X" % out_mlt)
-        cmds.setAttr("%s.input1X" % out_mlt, (distance / len(self.ik_joints[1:])) * mult)
+        cmds.setAttr("%s.input1X" % out_mlt, (distance / len(self.ik_joints[1:])))
 
         # Assign parents
         # cmds.parent(loc_start, self.ik_joints[0])
@@ -166,7 +163,7 @@ class IkSc(Part):
     def test_create(self):
         cmds.file(new=True, force=True)
 
-        joints = joint.create_chain(4, 'X', 4)
+        joints = joint.create_chain(3, 'X', -4)
 
         self.set_joints(joints)
         self.create()
@@ -180,7 +177,7 @@ class IkRp(IkSc):
 
     def _create(self):
         super(IkRp, self)._create()
-        self.add_polevector(offset=[0, 0, -10])
+        self.add_polevector(offset=[0, 0, 4])
 
     def create_ik(self):
         """Ik handle"""
@@ -236,10 +233,9 @@ class IkRp(IkSc):
         self.pv_ctl = ctl
         self.controls[ctl.name] = ctl
 
-        print self.controls.keys()
-
     def test_create(self):
         super(IkRp, self).test_create()
 
         self.pv_ctl.rotate_shapes([90, 0, 0])
         self.pv_ctl.scale_shapes(0.5)
+        self.add_stretch()

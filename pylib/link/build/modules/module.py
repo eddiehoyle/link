@@ -54,9 +54,3 @@ class Module(object):
         self._pre_create()
         self._create()
         self._post_create()
-
-        self.connect_settings()
-
-    def connect_settings(self):
-        pass
-

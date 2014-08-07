@@ -56,12 +56,19 @@ class FkChain(Simple):
                 pma = cmds.createNode("plusMinusAverage")
                 for axis in ["X", "Y", "Z"]:
                     val = cmds.getAttr("%s.%s%s" % (fk_jnt, attr, axis))
-                    
-                    # cmds.connectAttr("%s.%s%s" % (ctl.ctl, attr, axis), "%s.%s%s" % (fk_jnt, attr, axis))
+
+                    # # Determine if positive or negative
+                    # child_translateX = cmds.xform(src_jnt, q=True, ws=True, t=True)[0]
+                    # mult = 1
+                    # if child_translateX < 0:
+                    #     mult = -1
 
                     cmds.connectAttr("%s.%s%s" % (ctl.ctl, attr, axis), "%s.input3D[%s].input3D%s" % (pma, count, axis.lower()))
                     cmds.setAttr("%s.input3D[%s].input3D%s" % (pma, count + 1, axis.lower()), val)
                     cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.%s%s" % (fk_jnt, attr, axis))
+
+                # Add pma to control class
+                setattr(ctl, "pma_%s" % attr, pma)
 
                 count += 1
             
@@ -69,7 +76,6 @@ class FkChain(Simple):
             cmds.setAttr("%s.interpType" % con[0], 2)
 
             # Store attrs
-            
             ctl.fk_joint = fk_jnt
             ctl.joint = src_jnt
             ctl.constraint = con[0]
@@ -111,48 +117,31 @@ class FkChain(Simple):
                 cmds.setAttr("%s.length" % ctl.ctl, k=True)
 
                 distance = common.get_distance(ctl.ctl, child_ctl.ctl)
-                ctl_pma = cmds.createNode("plusMinusAverage", name=name.set_suffix(ctl.name, "ctlPma"))
-                jnt_pma = cmds.createNode("plusMinusAverage", name=name.set_suffix(ctl.name, "jntPma"))
-                out_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(ctl.name, "outMlt"))
-                nrm_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(ctl.name, "nrmMlt"))
+
+                # Get save connection index for translate
+                safe_translate_index = 0
+                while cmds.listConnections("%s.input3D[%s].input3Dx" % (child_ctl.pma_translate, safe_translate_index), s=1, d=0, p=1):
+                    safe_translate_index += 1
+                    cmds.listConnections("%s.input3D[%s].input3Dx" % (child_ctl.pma_translate, safe_translate_index), s=1, d=0, p=1)
 
                 # Determine if positive or negative
-                child_translateX = cmds.xform(child_ctl.ctl, q=True, ws=True, t=True)[0]
+                child_translateX = cmds.xform(child_ctl.joint, q=True, ws=True, t=True)[0]
                 mult = 1
                 if child_translateX < 0:
                     mult = -1
 
-                # Normalise length value
-                cmds.connectAttr("%s.length" % ctl.ctl, "%s.input1X" % nrm_mlt)
+                # Normailise the length attribute
+                dst_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(ctl.name, "dstMlt"))
+                cmds.connectAttr("%s.length" % ctl.ctl, "%s.input1X" % dst_mlt)
+                cmds.setAttr("%s.input2X" % dst_mlt, distance)
 
-                # Apply ctl values
-                cmds.connectAttr("%s.outputX" % nrm_mlt, "%s.input1D[0]" % ctl_pma)
-                cmds.setAttr("%s.input2X" % nrm_mlt, distance)
-                cmds.connectAttr("%s.output1D" % ctl_pma, "%s.input1X" % out_mlt)
-                cmds.connectAttr("%s.outputX" % out_mlt, "%s.translateX" % child_ctl.grp)
-
-                # Apply joint values
-                cmds.connectAttr("%s.outputX" % nrm_mlt, "%s.input1D[0]" % jnt_pma)
-
-                # Connect to joint
-                cons = cmds.listConnections("%s.translateX" % child_ctl.joint, source=True, destination=False, plugs=True) or []
-                if cons:
-                    cmds.disconnectAttr(cons[0], "%s.translateX" % child_ctl.joint)
-                    jnt_pma = cmds.createNode("plusMinusAverage")
-                    cmds.connectAttr(cons[0], "%s.input1D[0]" % jnt_pma)
-                    cmds.connectAttr("%s.output1D" % jnt_pma, "%s.translateX" % child_ctl.joint)
-                else:
-                    cmds.connectAttr("%s.output1D" % jnt_pma, "%s.translateX" % child_ctl.joint)
-
-
-                self.stretch_nodes[child_ctl.name] = dict(out_mlt=out_mlt,
-                                                          jnt_pma=jnt_pma,
-                                                          ctl_pma=ctl_pma,
-                                                          nrm_mlt=nrm_mlt)
+                # Connect to joint and ctl grp
+                cmds.connectAttr("%s.outputX" % dst_mlt, "%s.input3D[%s].input3Dx" % (child_ctl.pma_translate, safe_translate_index))
+                cmds.connectAttr("%s.outputX" % dst_mlt, "%s.translateX" % child_ctl.grp)
 
     def test_create(self):
         cmds.file(new=True, force=True)
-        jnts = joint.create_chain(3, 'X', 4, 'temp')
+        jnts = joint.create_chain(4, 'X', -3)
 
         self.set_joints(jnts)
         self.create()
