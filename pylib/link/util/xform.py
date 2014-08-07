@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from maya import cmds
-
+from link import util
 def match(target, source):
     """Match target to source xform"""
     match_translates(target, source)
@@ -26,3 +26,13 @@ def set_rotates(transform, array, world=True):
 def match_pivot(target, source):
     pos = cmds.xform(target, q=True, rp=True, ws=True)
     cmds.xform(source, rp=pos, ws=True)
+
+def match_average_position(target, sources):
+
+    vectors = []
+    for source in sources:
+        vec3f = cmds.xform(source, q=True, ws=True, t=True)
+        vectors.append(vec3f)
+
+    average = util.vector.average_vector3f(vectors)
+    cmds.xform(target, ws=True, t=average)

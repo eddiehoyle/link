@@ -133,7 +133,7 @@ class FkChain(Simple):
                 # Normailise the length attribute
                 dst_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(ctl.name, "dstMlt"))
                 cmds.connectAttr("%s.length" % ctl.ctl, "%s.input1X" % dst_mlt)
-                cmds.setAttr("%s.input2X" % dst_mlt, distance)
+                cmds.setAttr("%s.input2X" % dst_mlt, distance * mult)
 
                 # Connect to joint and ctl grp
                 cmds.connectAttr("%s.outputX" % dst_mlt, "%s.input3D[%s].input3Dx" % (child_ctl.pma_translate, safe_translate_index))

@@ -56,16 +56,23 @@ class IkSc(Part):
         self.create_ik()
         
         # Create control
-        ctl = Control(self.position, self.description)
-        ctl.create()
+        ik_ctl = Control(self.position, self.description, 0)
+        ik_ctl.create()
 
         # Style and lock attrs
-        ctl.set_style("cube")
-        ctl.lock_scales()
+        ik_ctl.set_style("cube")
+        ik_ctl.lock_scales()
+
+        #--------------
+        # Create control
+        base_ctl = Control(self.position, self.description, 1)
+        base_ctl.create()
 
         # Append control
-        self.controls[ctl.name] = ctl
-        self.ik_ctl = ctl
+        self.controls[ik_ctl.name] = ik_ctl
+        self.controls[base_ctl.name] = base_ctl
+        self.ik_ctl = ik_ctl
+        self.base_ctl = base_ctl
 
         return self.controls
 
@@ -90,23 +97,14 @@ class IkSc(Part):
         # Parent IK handle under ctl
         cmds.parent(self.ik, self.ik_ctl.ctl)
 
-        joint = self.ik_joints[-1]
-        self.ik_ctl.joint = joint
-        ctl = self.ik_ctl
+        # Ik ctl
+        self.ik_ctl.joint = self.ik_joints[-1]
+        con = cmds.orientConstraint(self.ik_ctl.ctl, self.ik_ctl.joint, mo=True)[0]
+        cmds.setAttr("%s.interpType" % con, 2)
 
-        # This is lazy, fix me later
-        # Trying to detect existing rotatation constraint
-        con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False) or []
-        
-        if con:
-            constraint.extend_constraint(ctl.ctl, con[0])
-
-        else:
-            cmds.parentConstraint(ctl.ctl, joint, st=['x', 'y', 'z'], mo=True)[0]
-            con = cmds.listConnections("%s.rotateX" % joint, type="parentConstraint", source=True, destination=False)
-
-        cmds.setAttr("%s.interpType" % con[0], 2)
-        self.ik_orient = con[0]
+        # Base ctl
+        self.base_ctl.joint = self.ik_joints[0]
+        con = cmds.pointConstraint(self.base_ctl.ctl, self.base_ctl.joint, mo=True)[0]
 
     def add_stretch(self):
         """Drive ik_joints by translateX and distance between start and end"""
@@ -133,20 +131,22 @@ class IkSc(Part):
         cmds.connectAttr("%s.outColorR" % cond, "%s.input2X" % div_mlt)
 
         # Detect positive or negative X value
-        # cmds.getAttr("%s.translateX" % loc_end)
-        # start_x = cmds.getAttr("%s.translateX" % loc_start)
-        # end_x = cmds.getAttr("%s.translateX" % loc_end)
-        # if end_x - start_x < 0:
-        #     mult = -1
+        end_x = cmds.getAttr("%s.translateX" % self.joints[-1])
+        mult = 1
+        if end_x < 0:
+            mult = -1
+
+        print "JNT X", "%s.translateX" % self.joints[-1], end_x
 
         # Connect logic
         out_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(self.name, "outMlt"))
         cmds.connectAttr("%s.outputX" % div_mlt, "%s.input2X" % out_mlt)
-        cmds.setAttr("%s.input1X" % out_mlt, (distance / len(self.ik_joints[1:])))
+        cmds.setAttr("%s.input1X" % out_mlt, (distance / len(self.ik_joints[1:])) * mult)
 
         # Assign parents
         # cmds.parent(loc_start, self.ik_joints[0])
-        cmds.parent(loc_end, self.controls[self.controls.keys()[0]].ctl)
+        cmds.parent(loc_end, self.ik_ctl.ctl)
+        cmds.parent(loc_start, self.base_ctl.ctl)
 
         # Add to joint
         for joint in self.ik_joints[1:]:

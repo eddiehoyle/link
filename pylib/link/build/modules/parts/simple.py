@@ -30,8 +30,9 @@ class Simple(Part):
         return self.controls
 
     def connect_controls(self):
-        for key, joint in zip(self.controls.keys(), self.joints):
-            cmds.parentConstraint(self.controls[key].ctl, joint, mo=True)
+        pass
+        # for key, joint in zip(self.controls.keys(), self.joints):
+        #     cmds.parentConstraint(self.controls[key].ctl, joint, mo=True)
 
     def test_create(self):
         cmds.file(new=True, force=True)

@@ -89,7 +89,7 @@ class IkFk(Part):
     def test_create(self, joints=None):
         cmds.file(new=True, force=True)
 
-        joints = joint.create_chain(3, "X", -4)
+        joints = joint.create_chain(3, "Y", -4)
         self.set_joints(joints)
 
         self.create()

@@ -9,6 +9,7 @@ from link.build.modules.parts.ik import IkRp
 from link.build.modules.parts.simple import Simple
 from link.build.modules.parts.base import Base
 from link.build.modules.parts.ikfk import IkFk
+from link.build.modules.parts.spline import IkSpline
 
 import logging
 log = logging.getLogger(__name__)
@@ -34,13 +35,14 @@ class Link(object):
 
         # Components
         self.create_skeleton()
-        # self.create_proxy()
+        self.create_proxy()
 
         # Parts
+        self.create_spine()
         self.create_root()
         self.create_hip()
 
-        for pos in ["L", "R"]:
+        for pos in ['L', 'R']:
             self.create_collar(pos)
             self.create_arm(pos)
             self.create_leg(pos)
@@ -114,7 +116,7 @@ class Link(object):
         joints = ["%s_collar_0_jnt" % position]
         part.set_joints(joints)
         part.create()
-        part.omit_last_control()
+
         self.append_part(part)
 
         part.scale_shapes(4)
@@ -128,7 +130,7 @@ class Link(object):
         part.add_stretch()
         self.append_part(part)
 
-        part.scale_shapes(8)
+        part.scale_shapes(6)
 
     def create_leg(self, position):
         part = IkFk(position, 'leg')
@@ -138,7 +140,7 @@ class Link(object):
         part.add_stretch()
         self.append_part(part)
 
-        part.scale_shapes(10)
+        part.scale_shapes(6)
 
     def create_hip(self):
         part = Simple('C', 'hip')
@@ -157,6 +159,15 @@ class Link(object):
         self.append_part(part)
         
         part.scale_shapes(10)
+
+    def create_spine(self):
+        part = IkSpline('C', 'spine')
+        part.set_joints(["C_spine_%s_jnt" % index for index in range(5)])
+        part.create()
+        part.add_stretch()
+
+        self.append_part(part)
+        part.scale_shapes(10)        
 
     def append_part(self, part):
         self.parts[part.name] = part
