@@ -51,6 +51,9 @@ class Control(object):
 
         cmds.parent(self.ctl, self.grp)
 
+        # Lock vis auto
+        self.lock_vis()
+
     def set_style(self, style):
         self._shape.set_style(style)
 

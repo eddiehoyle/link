@@ -6,6 +6,7 @@ from link.util.control.control import Control
 from link import util
 from maya import cmds
 from link.build.modules.parts.part import Part
+from link.build.modules.parts.fk import FkChain
 from collections import OrderedDict
 import logging
 logger = logging.getLogger(__name__)
@@ -41,6 +42,13 @@ class IkSpline(Part):
         logger.info("Creating Ik using nodes: %s" % self.joints)
         self.ik, self.effector, self.curve = cmds.ikHandle(sj=start_joint, ee=end_joint, sol="ikSplineSolver", ns=3)
 
+        # Set attrs
+        cmds.setAttr("%s.dTwistControlEnable" % self.ik, 1)
+        cmds.setAttr("%s.dWorldUpAxis" % self.ik, 1)
+        cmds.setAttr("%s.dWorldUpType" % self.ik, 4)
+        cmds.setAttr("%s.dWorldUpVector" % self.ik, 1.0, 0.0, 0.0, type="float3")
+        cmds.setAttr("%s.dWorldUpVectorEnd" % self.ik, 1.0, 0.0, 0.0, type="float3")
+
         # Turn on cvs
         cmds.select(self.curve, r=True)
         cmds.toggle(cv=True)
@@ -53,7 +61,6 @@ class IkSpline(Part):
         
         util.xform.match_pivot(start_joint, clusters['bot'])
         util.xform.match_pivot(end_joint, clusters['top'])
-
 
         self.clusters = clusters
 
@@ -80,6 +87,11 @@ class IkSpline(Part):
 
             index += 1
 
+        # Lock mid controls rotates
+        self.ik_controls['mid'].lock_rotates()
+
+        return self.controls
+
     def match_controls(self):
 
         bot_ctl = self.ik_controls['bot']
@@ -92,11 +104,26 @@ class IkSpline(Part):
         # Get mid position
         util.xform.match_average_position(mid_ctl.grp, [top_ctl.grp, bot_ctl.grp])
 
-    def connect_controls(self):        
+    def connect_controls(self):
+
+        bot_ctl = self.ik_controls['bot']
+        mid_ctl = self.ik_controls['mid']
+        top_ctl = self.ik_controls['top']
+
         for key, ctl in self.controls.items():
             cmds.parent(ctl.cluster, ctl.ctl)
 
         cmds.orientConstraint(self.ik_controls['top'].ctl, self.ik_joints[-1], mo=True)
+
+        # Connect to IkHandle
+        cmds.connectAttr("%s.worldMatrix" % bot_ctl.ctl, "%s.dWorldUpMatrix" % self.ik)
+        cmds.connectAttr("%s.worldMatrix" % top_ctl.ctl, "%s.dWorldUpMatrixEnd" % self.ik)
+
+        # Middle ctl follow
+        con = cmds.parentConstraint([bot_ctl.ctl, top_ctl.ctl], mid_ctl.grp, mo=True)[0]
+        aliases = cmds.parentConstraint(con, q=True, wal=True)
+        for alias in aliases:
+            cmds.setAttr("%s.%s" % (con, alias), 0.5)
 
     def parent_controls(self):
         pass
@@ -125,8 +152,91 @@ class IkSpline(Part):
     def test_create(self):
         cmds.file(new=True, force=True)
 
-        joints = joint.create_chain(5, "Y", 4)
+        joints = joint.create_chain(5, "Y", 2)
         self.set_joints(joints)
 
         self.create()
         self.add_stretch()
+
+
+class IkFkSpline(Part):
+    def __init__(self, position, description):
+        super(IkFkSpline, self).__init__(position, description)
+
+        self.ik = IkSpline(position, description)
+        self.fk = FkChain(position, description)
+
+        self.ik._duplicate_joints = self._ik_duplicate_joints
+
+    def _ik_duplicate_joints(self):
+        # Create new joints
+        self.ik.ik_joints = util.joint.duplicate_joints(self.ik.joints, "ik")
+
+    def _pre_create(self):
+        super(IkFkSpline, self)._pre_create()
+
+        self.ik.top_node = self.top_node
+        self.fk.top_node = self.top_node
+        self.ik.settings_node = self.settings_node
+        self.fk.settings_node = self.settings_node
+
+    def create_controls(self):
+        ik_controls = self.ik.create_controls()
+        fk_controls = self.fk.create_controls()
+
+        self.fk.rotate_shapes([0, 0, 90])
+
+        self.controls.update(ik_controls)
+        self.controls.update(fk_controls)
+
+    def set_joints(self, joints):
+        self.joints = joints
+        self.ik.set_joints(joints)
+        self.fk.set_joints(joints)
+
+    def connect_controls(self):
+        self.ik.connect_controls()
+        self.fk.connect_controls()
+
+    def match_controls(self):
+        self.ik.match_controls()
+        self.fk.match_controls()
+
+    def add_stretch(self):
+        return
+        self.ik.add_stretch()
+        self.fk.add_stretch()
+
+    def parent_controls(self):
+        self.ik.parent_controls()
+        self.fk.parent_controls()
+
+    def connect_settings(self):
+        self.connect_ikfk()
+
+    def connect_ikfk(self):
+        for ik_jnt, fk_ctl_key in zip(self.ik.ik_joints, self.fk.controls.keys()):
+            fk_ctl = self.fk.controls[fk_ctl_key]
+            cmds.parentConstraint(ik_jnt, fk_ctl.grp, mo=True)
+
+            # fk_rotate_pma = fk_ctl.pma_rotate
+            # index = 2
+            # for axis in ["X", "Y", "Z"]:
+            #     val = cmds.getAttr("%s.rotate%s" % (ik_jnt, axis))
+            #     pma_null = cmds.createNode("plusMinusAverage")
+            #     cmds.connectAttr("%s.rotate%s" % (ik_jnt, axis), "%s.input3D[0].input3D%s" % (pma_null, axis.lower()))
+            #     cmds.setAttr("%s.input3D[1].input3D%s" % (pma_null, axis.lower()), val * -1)
+            #     cmds.connectAttr("%s.output3D.output3D%s" % (pma_null, axis.lower()), "%s.input3D[%s].input3D%s" % (fk_rotate_pma, index, axis.lower()))
+
+    # def create(self):
+    #     pass
+
+    def test_create(self):
+        cmds.file(new=True, force=True)
+
+        joints = joint.create_chain(5, "Y", 2)
+
+        self.set_joints(joints)
+
+        self.create()
+        # self.add_stretch()
