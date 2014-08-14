@@ -63,7 +63,6 @@ class IkSc(Part):
         ik_ctl.set_style("cube")
         ik_ctl.lock_scales()
 
-        #--------------
         # Create control
         base_ctl = Control(self.position, self.description, 1)
         base_ctl.create()
@@ -81,6 +80,7 @@ class IkSc(Part):
 
         # Match IK Handle to end joint
         xform.match_translates(self.ik_ctl.grp, self.ik_joints[-1])
+        xform.match_translates(self.base_ctl.grp, self.ik_joints[0])
 
         # Apply orient offset if found to ik control
         orient_offset = self.offset.get("orient", {})
@@ -136,25 +136,17 @@ class IkSc(Part):
         if end_x < 0:
             mult = -1
 
-        print "JNT X", "%s.translateX" % self.joints[-1], end_x
-
-        # Connect logic
-        out_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(self.name, "outMlt"))
-        cmds.connectAttr("%s.outputX" % div_mlt, "%s.input2X" % out_mlt)
-        cmds.setAttr("%s.input1X" % out_mlt, (distance / len(self.ik_joints[1:])) * mult)
-
-        # Assign parents
-        # cmds.parent(loc_start, self.ik_joints[0])
+        # Parent dst locs
         cmds.parent(loc_end, self.ik_ctl.ctl)
         cmds.parent(loc_start, self.base_ctl.ctl)
 
-        # Add to joint
-        for joint in self.ik_joints[1:]:
-            cmds.connectAttr("%s.outputX" % out_mlt, "%s.translateX" % joint)
+        for ik_jnt, src_jnt in zip(self.ik_joints[:-1], self.joints):
 
-        # Store important nodes
-        self.stretch_nodes.update({'out_mlt': out_mlt,
-                                   'div_mlt': div_mlt})
+            # Scale ik joints
+            cmds.connectAttr("%s.outputX" % div_mlt, "%s.scaleX" % ik_jnt)
+
+            # Connect ik to source joints
+            cmds.connectAttr("%s.scaleX" % ik_jnt, "%s.scaleX" % src_jnt)
 
     def add_settings(self):
         super(IkSc, self).add_settings()
@@ -190,6 +182,7 @@ class IkRp(IkSc):
         """Add pole vector for ikHandle"""
 
         description = description or util.name.get_description(util.name.set_description_suffix(self.ik_ctl.ctl, "pv"))
+        
         # Create control
         ctl = Control(self.position, description)
         ctl.create()
@@ -202,8 +195,6 @@ class IkRp(IkSc):
         # Create aim
         # for axis in ["X", "Y", "Z"]:
         #     cmds.setAttr("%s.rotate%s" % (ctl.ctl, axis), k=False, cb=False)
-
-
 
         # Find center of ik handle
         start_pos = cmds.xform(self.ik_joints[0], q=1, t=1, ws=1)
@@ -218,16 +209,12 @@ class IkRp(IkSc):
 
         # Move into position
         cmds.xform(ctl.grp, t=middle_pos, ws=True)
-        # cmds.xform(ctl.grp, ro=middle_rot, ws=True)
 
         # Create poleVector
         cmds.poleVectorConstraint(ctl.ctl, self.ik, weight=True)
 
         # Add annotation
         mid_jnt = self.ik_joints[(len(self.ik_joints)-1)/2]
-        # loc = cmds.createNode("locator")
-        # cmds.parent(loc, mid_jnt, shape=True, r=True)
-
         util.anno.aim(ctl.ctl, mid_jnt, "pv")
 
         self.pv_ctl = ctl
@@ -236,6 +223,7 @@ class IkRp(IkSc):
     def test_create(self):
         super(IkRp, self).test_create()
 
-        self.pv_ctl.rotate_shapes([90, 0, 0])
+        self.pv_ctl.rotate_shapes([-90, 0, 0])
         self.pv_ctl.scale_shapes(0.5)
+        self.base_ctl.rotate_shapes([0, 0, 90])
         self.add_stretch()

@@ -9,7 +9,7 @@ from link.build.modules.parts.ik import IkRp
 from link.build.modules.parts.simple import Simple
 from link.build.modules.parts.base import Base
 from link.build.modules.parts.ikfk import IkFk
-from link.build.modules.parts.spline import IkSpline
+from link.build.modules.parts.spline import IkSpline, IkFkSpline
 
 import logging
 log = logging.getLogger(__name__)
@@ -31,21 +31,20 @@ class Link(object):
         """Create rig"""
 
         # Global control
-        self.create_global()
+        # self.create_global()
 
         # Components
         self.create_skeleton()
         self.create_proxy()
 
         # Parts
-        self.create_spine()
-        self.create_root()
-        self.create_hip()
+        # self.create_spine()
+        # self.create_root()
+        # self.create_hip()
 
-        for pos in ['L', 'R']:
-            self.create_collar(pos)
+        for pos in ['L' , 'R']:
             self.create_arm(pos)
-            self.create_leg(pos)
+        #     self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
@@ -110,27 +109,45 @@ class Link(object):
         self.append_part(part)
 
         part.scale_shapes(12)
-
-    def create_collar(self, position):
-        part = FkChain(position, 'collar')
-        joints = ["%s_collar_0_jnt" % position]
-        part.set_joints(joints)
-        part.create()
-
-        self.append_part(part)
-
-        part.scale_shapes(4)
-        part.rotate_shapes([0, 0, 90])
+        
 
     def create_arm(self, position):
-        part = IkFk(position, 'arm')
-        joints = ["%s_arm_%s_jnt" % (position, index) for index in range(3)]
-        part.set_joints(joints)
-        part.create()
-        part.add_stretch()
-        self.append_part(part)
 
-        part.scale_shapes(6)
+        # Arm
+        arm_part = IkFk(position, 'arm')
+        joints = ["%s_arm_%s_jnt" % (position, index) for index in range(3)]
+        arm_part.set_joints(joints)
+        arm_part.create()
+        arm_part.add_stretch()
+        arm_part.scale_shapes(6)
+
+        # Custom arm shapes
+        arm_part.ik.pv_ctl.scale_shapes(0.4)
+        arm_part.ik.pv_ctl.rotate_shapes([90, 0, 0])
+        arm_part.ik.base_ctl.rotate_shapes([0, 0, 90])
+
+        # Pv position
+        mult = 1
+        if position == 'R':
+            mult = -1
+        arm_part.ik.pv_ctl.set_translates([46.753 * mult, 137.316, -40])
+
+        # Collar
+        collar_part = FkChain(position, 'collar')
+        joints = ["%s_collar_0_jnt" % position]
+        collar_part.set_joints(joints)
+        collar_part.create()
+        collar_part.scale_shapes(4)
+        collar_part.rotate_shapes([0, 0, 90])
+
+        # Append
+        self.append_part(collar_part)
+        self.append_part(arm_part)
+
+        # Connect parts
+        cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.ik.base_ctl.grp, sr=['x', 'y', 'z'], mo=True)
+        cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.fk.get_control(0).grp, sr=['x', 'y', 'z'], mo=True)
+        # cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.fk.fk_joints[0], sr=['x', 'y', 'z'], mo=True)
 
     def create_leg(self, position):
         part = IkFk(position, 'leg')
@@ -161,7 +178,7 @@ class Link(object):
         part.scale_shapes(10)
 
     def create_spine(self):
-        part = IkSpline('C', 'spine')
+        part = IkFkSpline('C', 'spine')
         part.set_joints(["C_spine_%s_jnt" % index for index in range(5)])
         part.create()
         part.add_stretch()

@@ -63,8 +63,28 @@ class IkFk(Part):
         self.fk.match_controls()
 
     def add_stretch(self):
+
+        # Add IK stretch but remove source joints scaleX connection
         self.ik.add_stretch()
+        for jnt in self.joints:
+            scale_con = cmds.listConnections("%s.scaleX" % jnt, source=True, destination=False, plugs=True)
+            if scale_con:
+                cmds.disconnectAttr(scale_con[0], "%s.scaleX" % jnt)
+
+        # Add FK stretch but remove source joints scaleX connection
         self.fk.add_stretch()
+        for jnt in self.joints:
+            scale_con = cmds.listConnections("%s.scaleX" % jnt, source=True, destination=False, plugs=True)
+            if scale_con:
+                cmds.disconnectAttr(scale_con[0], "%s.scaleX" % jnt)
+
+        # Blend scales between ik and fk joints to source joints
+        for src_joint, fk_joint, ik_joint in zip(self.joints, self.fk.fk_joints, self.ik.ik_joints):
+            blend = cmds.createNode("blendColors")
+            cmds.connectAttr("%s.fkik" % self.settings_node, "%s.blender" % blend)
+            cmds.connectAttr("%s.scaleX" % ik_joint, "%s.color1R" % blend)
+            cmds.connectAttr("%s.scaleX" % fk_joint, "%s.color2R" % blend)
+            cmds.connectAttr("%s.outputR" % blend, "%s.scaleX" % src_joint)
 
     def parent_controls(self):
         self.ik.parent_controls()
@@ -85,16 +105,20 @@ class IkFk(Part):
             cmds.connectAttr("%s.fkik" % self.settings_node, "%s.%s" % (con, aliases[0]))
             cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (con, aliases[1]))
 
+        # Connect base Fk control
+        cmds.pointConstraint(self.ik.base_ctl.ctl, self.fk.get_control(0).grp, mo=True)
+        cmds.pointConstraint(self.ik.base_ctl.ctl, self.fk.fk_joints[0], mo=True)
 
     def test_create(self, joints=None):
         cmds.file(new=True, force=True)
 
-        joints = joint.create_chain(3, "Y", -4)
+        joints = joint.create_chain(3, "X", -4)
         self.set_joints(joints)
 
         self.create()
 
         cmds.setAttr("%s.translateZ" % self.ik.pv_ctl.grp, 4)
-        self.scale_shapes(0.7)
-        self.ik.pv_ctl.scale_shapes(0.2)
+        self.ik.pv_ctl.scale_shapes(0.5)
+        self.ik.pv_ctl.rotate_shapes([-90, 0, 0])
+        self.ik.base_ctl.rotate_shapes([0, 0, 90])
         self.add_stretch()
