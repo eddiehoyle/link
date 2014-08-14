@@ -1,3 +1,9 @@
+## Build goals
+- [ ] Create auto clavicle for arm in build
+- [ ] Write hand build with multiFk part
+- [ ] Add some follow relationships
+
+
 ## Stretch goals
 - [ ] Create layout rig
 - [ ] Create deform rig
@@ -35,7 +41,7 @@
 - [x] Add settings group
 - [ ] Write a twist deformer part
 - [x] Write a global part (named Base case global is reserved)
-- [ ] Write spine part
+- [x] Write spine part
 - [ ] Write foot part
 - [ ] Write multi part (combine parts?)
 - [ ] Create face part library
@@ -50,9 +56,5 @@
 - [x] Write attribute library (properly)
 - [ ] Tidy up util.name 
 - [ ] Tidy up util.attr
-- [ ] Add vector utils
+- [x] Add vector utils
 - [x] Add joint utils for easy joint creation for test methods
-
-
-## Build
-- [ ] Add some more rig layout controls
