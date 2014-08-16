@@ -38,6 +38,8 @@ class Link(object):
         self.create_proxy()
 
         # Parts
+        self.create_hat()
+        # self.create_neck()
         # self.create_spine()
         # self.create_root()
         # self.create_hip()
@@ -58,6 +60,7 @@ class Link(object):
         self._post_build()
 
     def _create_nodes(self):
+
         # Nodes
         self.top_node = cmds.createNode("transform", name=self.asset)
         self.part_node = cmds.createNode("transform", name="parts")
@@ -109,7 +112,26 @@ class Link(object):
         self.append_part(part)
 
         part.scale_shapes(12)
-        
+    
+    def create_hat(self):
+        hat_part = IkFkSpline("C", "hat")
+        joints = ['C_hat_%s_jnt' % i for i in range(6)]
+        hat_part.set_joints(joints)
+        hat_part.create()
+        hat_part.add_stretch()
+
+        self.append_part(hat_part)
+
+    def create_neck(self):
+        head_part = FkChain("C", "head")
+        joints = ['C_neck_1_jnt', 'C_neck_2_jnt', 'C_head_0_jnt']
+        head_part.set_joints(joints)
+        head_part.create()
+        head_part.add_stretch()
+
+        head_part.rotate_shapes([0, 0, 90])
+        head_part.scale_shapes(8)
+        self.append_part(head_part)
 
     def create_arm(self, position):
 

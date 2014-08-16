@@ -29,10 +29,6 @@ class Component(Module):
         temp_namespace = "temp"
         cmds.file(self.file, i=True, namespace=temp_namespace)
 
-        # Parent all top import nodes under component top node
-        top_nodes = cmds.ls("%s:*" % temp_namespace, assemblies=True)
-        for top_node in top_nodes:
-            cmds.parent(top_node, self.top_node)
 
         # Collect component nodes
         nodes = self._collect_imported_nodes()
@@ -51,9 +47,18 @@ class Component(Module):
 
         cmds.namespace(removeNamespace=temp_namespace, mergeNamespaceWithRoot=True, force=True)
 
+        # Add to controls
+
     def _create(self):
         self.import_file()
 
 
+    def _tidy_up(self):
+        super(Component, self)._tidy_up()
+
+        # Parent nodes under control node
+        for n in self.nodes:
+            if n in cmds.ls(assemblies=True):
+                cmds.parent(n, self.control_node)
 
 

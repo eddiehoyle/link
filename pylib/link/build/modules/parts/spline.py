@@ -119,11 +119,6 @@ class IkSpline(Part):
         cmds.connectAttr("%s.worldMatrix" % bot_ctl.ctl, "%s.dWorldUpMatrix" % self.ik)
         cmds.connectAttr("%s.worldMatrix" % top_ctl.ctl, "%s.dWorldUpMatrixEnd" % self.ik)
 
-        # Middle ctl follow
-        con = cmds.parentConstraint([bot_ctl.ctl, top_ctl.ctl], mid_ctl.grp, mo=True)[0]
-        aliases = cmds.parentConstraint(con, q=True, wal=True)
-        for alias in aliases:
-            cmds.setAttr("%s.%s" % (con, alias), 0.5)
 
     def parent_controls(self):
         pass

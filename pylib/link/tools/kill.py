@@ -16,7 +16,7 @@ def main():
     result = subprocess.check_output(grep_cmd, shell=True, stderr=subprocess.PIPE)
 
     if result:
-        _id = res.split()[1]
+        _id = result.split()[1]
 
         # Kill Maya
         kill_cmd = ['kill %s - 9' % _id]

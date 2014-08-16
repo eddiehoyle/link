@@ -54,6 +54,10 @@ class IkFk(Part):
         self.controls.update(ik_controls)
         self.controls.update(fk_controls)
 
+        # Store setup nodes
+        self.setups.extend(self.ik.setups)
+        self.setups.extend(self.fk.setups)
+
     def connect_controls(self):
         self.ik.connect_controls()
         self.fk.connect_controls()

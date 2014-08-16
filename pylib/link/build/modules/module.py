@@ -1,5 +1,6 @@
 
-from link.util import name, attr, anno
+# from link.util import name, attr, anno
+from link import util
 from maya import cmds
 from functools import partial
 import logging
@@ -14,19 +15,25 @@ class Module(object):
         self.index = index
         self.suffix = "mod"
 
-        self.name = name.create_name(self.position, self.description, self.index, self.suffix)
+        self.name = util.name.create_name(self.position, self.description, self.index, self.suffix)
+        
         self.nodes = []
+        self.controls = {}
+        self.setups = []
 
-    def _pre_create(self):
+    def _create_module_nodes(self):
         """Create top nodes and settings"""
 
         # Create top node
         self.top_node = cmds.createNode("transform", name=self.name)
+        self.control_node = cmds.createNode("transform", name=util.name.set_description_suffix(self.name, "control"))
+        self.setup_node = cmds.createNode("transform", name=util.name.set_description_suffix(self.name, "setup"))
+        cmds.parent([self.setup_node, self.control_node], self.top_node)
 
         # Create settings node
-        loc = cmds.spaceLocator(name=name.set_suffix(self.name, "settings"))[0]
+        loc = cmds.spaceLocator(name=util.name.set_suffix(self.name, "settings"))[0]
         shape = cmds.listRelatives(loc, shapes=True)[0]
-        attr.lock_all(loc)
+        util.attr.lock_all(loc)
 
         # Hide these
         for local in ["localPosition", "localScale"]:
@@ -37,11 +44,14 @@ class Module(object):
         cmds.setAttr("%s.overrideEnabled" % shape, True)
         cmds.setAttr("%s.overrideColor" % shape, 17)
 
+        self.settings_node = shape
+        cmds.parent(loc, self.top_node)
+
         # Hide shape
         cmds.setAttr("%s.visibility" % shape, 0)
-        # anno.add(loc, loc)
 
-        self.settings_node = shape
+    def _pre_create(self):
+        pass
 
     def _create(self):
         pass
@@ -51,6 +61,34 @@ class Module(object):
 
     def create(self):
         log.info("%s" % self.__class__.__name__)
+
+        # Necessary part nodes
+        self._create_module_nodes()
+
+        # Creation process
         self._pre_create()
         self._create()
         self._post_create()
+
+        # Parent nodes
+        self._tidy_up()
+
+    def _tidy_up(self):
+        """Move nodes around into their modular containers"""
+
+        # Put controls under control group
+        for key, ctl in self.controls.items():
+            if ctl.grp in cmds.ls(assemblies=True):
+                cmds.parent(ctl.grp, self.control_node)
+
+        for node in set(self.setups):
+            if node in cmds.ls(assemblies=True):
+                cmds.parent(node, self.setup_node)
+
+
+
+
+
+
+
+

@@ -22,3 +22,5 @@ def average_vector3f(vectors):
     count = len(vectors)
     return [x/count, y/count, z/count]
 
+def inverse3f(vector):
+    return [vector[0] * -1, vector[1] * -1, vector[2] * -1]

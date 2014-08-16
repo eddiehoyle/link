@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from link.util import attr
+from link import util
 
 from maya import cmds
 from link.build.modules.components.component import Component
@@ -35,7 +36,22 @@ class Proxy(Component):
 
             if cmds.objExists(jnt):
                 if cmds.nodeType(geo) == "transform" and cmds.nodeType(jnt) == "joint":
-                    cmds.parent(geo, jnt)
+
+                    util.xform.match_pivot(jnt, geo)
+
+                    jnt_shape = cmds.listRelatives(jnt, shapes=True)
+                    if jnt_shape:
+                        decom_node = cmds.createNode("decomposeMatrix", name=util.name.set_suffix(geo, "decompose"))
+                        cmds.connectAttr("%s.worldMatrix" % jnt, "%s.inputMatrix" % decom_node)
+
+                        cmds.setAttr("%s.scale" % geo, 1, 1, 1, type="float3")
+                        cmds.parent(geo, jnt)
+                        cmds.makeIdentity(apply=True, t=1, r=1, s=1, n=0, pn=0)
+                        cmds.parent(geo, world=True)
+
+                        for attr in ['translate', 'rotate', 'scale']:
+                            cmds.connectAttr("%s.output%s" % (decom_node, attr.capitalize()), "%s.%s" % (geo, attr))
+
 
 
     def connect_settings(self):

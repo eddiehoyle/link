@@ -27,6 +27,9 @@ class FkChain(Simple):
         # Create new joints
         self.fk_joints = util.joint.duplicate_joints(self.joints, "fk")
 
+        # Add to setups
+        self.setups.extend(self.fk_joints)
+
     def create_controls(self):
         """Create controls"""
 
@@ -52,32 +55,6 @@ class FkChain(Simple):
 
             ctl = self.controls[key]
             cmds.orientConstraint(ctl.ctl, fk_jnt, mo=True)
-
-
-            # div_mlt = cmds.createNode("multiplyDivide")
-            # cmds.connectAttr("%s.outputX")
-
-
-            # for attr in ["scale"]:
-            #     count = 0
-            #     pma = cmds.createNode("plusMinusAverage")
-            #     for axis in ["X"]:
-            #         val = cmds.getAttr("%s.%s%s" % (fk_jnt, attr, axis))
-
-            #         # # Determine if positive or negative
-            #         # child_translateX = cmds.xform(src_jnt, q=True, ws=True, t=True)[0]
-            #         # mult = 1
-            #         # if child_translateX < 0:
-            #         #     mult = -1
-
-            #         cmds.connectAttr("%s.%s%s" % (ctl.ctl, attr, axis), "%s.input3D[%s].input3D%s" % (pma, count, axis.lower()))
-            #         # cmds.setAttr("%s.input3D[%s].input3D%s" % (pma, count + 1, axis.lower()), val)
-            #         cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.%s%s" % (fk_jnt, attr, axis))
-
-            #     # Add pma to control class
-            #     setattr(ctl, "pma_%s" % attr, pma)
-
-            #     count += 1
             
             con = cmds.parentConstraint(fk_jnt, src_jnt, mo=True)
             cmds.setAttr("%s.interpType" % con[0], 2)
@@ -86,46 +63,6 @@ class FkChain(Simple):
             ctl.fk_joint = fk_jnt
             ctl.joint = src_jnt
             ctl.constraint = con[0]
-
-
-
-
-
-
-
-
-
-
-
-
-            # for attr in ["scale"]:
-            #     count = 0
-            #     pma = cmds.createNode("plusMinusAverage")
-            #     for axis in ["X"]:
-            #         val = cmds.getAttr("%s.%s%s" % (fk_jnt, attr, axis))
-
-            #         # # Determine if positive or negative
-            #         # child_translateX = cmds.xform(src_jnt, q=True, ws=True, t=True)[0]
-            #         # mult = 1
-            #         # if child_translateX < 0:
-            #         #     mult = -1
-
-            #         cmds.connectAttr("%s.%s%s" % (ctl.ctl, attr, axis), "%s.input3D[%s].input3D%s" % (pma, count, axis.lower()))
-            #         cmds.setAttr("%s.input3D[%s].input3D%s" % (pma, count + 1, axis.lower()), val)
-            #         cmds.connectAttr("%s.output3D.output3D%s" % (pma, axis.lower()), "%s.%s%s" % (fk_jnt, attr, axis))
-
-            #     # Add pma to control class
-            #     setattr(ctl, "pma_%s" % attr, pma)
-
-            #     count += 1
-            
-            # con = cmds.parentConstraint(fk_jnt, src_jnt, mo=True)
-            # cmds.setAttr("%s.interpType" % con[0], 2)
-
-            # # Store attrs
-            # ctl.fk_joint = fk_jnt
-            # ctl.joint = src_jnt
-            # ctl.constraint = con[0]
 
     def omit_last_control(self):
         """Delete last control"""
@@ -138,9 +75,6 @@ class FkChain(Simple):
 
     def parent_controls(self):
         """Hierarchy"""
-
-        for key, ctl in self.controls.items():
-            cmds.parent(ctl.grp, self.top_node)
 
         for key, ctl in self.controls.items():
             index = name.get_index(key)

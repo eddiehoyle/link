@@ -27,3 +27,22 @@ def create_line_curve(transform0, transform1):
     cmds.setAttr("%s.overrideDisplayType" % crv_shape, 2)
 
     return curve
+
+def create_curve(positions, degree):
+    knots = []
+    knots.extend([0 for i in range(degree)])
+    knots.extend(range(len(positions) - 1)[1:-2])
+    knots.extend([len(positions) - degree for i in range(degree)])
+    print 'knots', knots
+    return cmds.curve(name="test", d=degree, p=positions, k=knots)
+
+def rebuild_curve(curve, detail):
+    return cmds.rebuildCurve(curve, ch=False, replaceOriginal=True, end=1, kr=0, kcp=0, kep=1, kt=0, s=detail)
+    # rebuildCurve -ch 0 -rpo 1 -rt 0 -end 1 -kr 0 -kcp 0 -kep 1 -kt 0 -s 3 -d 3 -tol 1.15862e-08 "test";
+
+def create_from_nodes(nodes, degree=3):
+    """Create a curve from a bunch of transforms"""
+    positions = [cmds.xform(n, q=True, ws=True, t=True) for n in nodes]
+    print positions
+    # print len(positions)
+    crv = create_curve(positions, degree)

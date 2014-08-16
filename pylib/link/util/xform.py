@@ -24,8 +24,10 @@ def set_rotates(transform, array, world=True):
     cmds.xform(transform, ro=array, ws=world, os=not world)
 
 def match_pivot(target, source):
-    pos = cmds.xform(target, q=True, rp=True, ws=True)
-    cmds.xform(source, rp=pos, ws=True)
+    rotate_translate_piv = cmds.xform(target, q=True, rp=True, ws=True)
+    scale_piv = cmds.xform(target, q=True, sp=True, ws=True)
+    cmds.xform(source, rp=rotate_translate_piv, ws=True)
+    cmds.xform(source, sp=scale_piv, ws=True)
 
 def match_average_position(target, sources):
 

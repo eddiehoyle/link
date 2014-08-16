@@ -39,6 +39,9 @@ class IkSc(Part):
         for ik_jnt, src_jnt in zip(self.ik_joints, self.joints):
             cmds.parentConstraint(ik_jnt, src_jnt, mo=True)
 
+        # Add to setups
+        self.setups.extend(self.ik_joints)
+
     def create_ik(self):
         """Ik handle"""
 

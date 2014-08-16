@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+Common utility methods for Maya
+"""
+
 from maya import cmds
 
 def get_color_index(position):
@@ -21,6 +25,15 @@ def get_color_index(position):
 				raise KeyError("Position color index '%s' not recognised." % position)
 
 		return index
+
+def get_top_parent(node):
+	"""Get top of hierarchy"""
+
+	top_node = cmds.listRelatives(node, p=True)
+	while top_node:
+		node = top_node[0]
+		top_node = cmds.listRelatives(node, p=True)
+	return node
 
 def create_distance(start, end):
 		loc_start = cmds.spaceLocator()[0]
