@@ -110,8 +110,7 @@ class IkFk(Part):
             cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (con, aliases[1]))
 
         # Connect base Fk control
-        cmds.pointConstraint(self.ik.base_ctl.ctl, self.fk.get_control(0).grp, mo=True)
-        cmds.pointConstraint(self.ik.base_ctl.ctl, self.fk.fk_joints[0], mo=True)
+        cmds.pointConstraint(self.ik.base_null, self.fk.fk_joints[0], mo=True)
 
     def test_create(self, joints=None):
         cmds.file(new=True, force=True)
@@ -124,5 +123,4 @@ class IkFk(Part):
         cmds.setAttr("%s.translateZ" % self.ik.pv_ctl.grp, 4)
         self.ik.pv_ctl.scale_shapes(0.5)
         self.ik.pv_ctl.rotate_shapes([-90, 0, 0])
-        self.ik.base_ctl.rotate_shapes([0, 0, 90])
         self.add_stretch()

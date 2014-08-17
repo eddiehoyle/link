@@ -1,1 +1,1 @@
-print 'init'
+from link import log

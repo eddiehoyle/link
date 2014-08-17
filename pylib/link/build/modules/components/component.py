@@ -29,7 +29,6 @@ class Component(Module):
         temp_namespace = "temp"
         cmds.file(self.file, i=True, namespace=temp_namespace)
 
-
         # Collect component nodes
         nodes = self._collect_imported_nodes()
         for node in nodes:
@@ -42,8 +41,11 @@ class Component(Module):
 
             # Rename
             clean_node = ":".join(node.split(":")[1:])
-            cmds.rename(node, clean_node)
-            self.nodes.append(clean_node)
+            try:
+                cmds.rename(node, clean_node)
+                self.nodes.append(clean_node)
+            except:
+                pass
 
         cmds.namespace(removeNamespace=temp_namespace, mergeNamespaceWithRoot=True, force=True)
 

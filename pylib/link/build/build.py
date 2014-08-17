@@ -10,6 +10,7 @@ from link.build.modules.parts.simple import Simple
 from link.build.modules.parts.base import Base
 from link.build.modules.parts.ikfk import IkFk
 from link.build.modules.parts.spline import IkSpline, IkFkSpline
+from link.util.io.control import ControlFileHandler
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,7 +39,7 @@ class Link(object):
         self.create_proxy()
 
         # Parts
-        self.create_hat()
+        # self.create_hat()
         # self.create_neck()
         # self.create_spine()
         # self.create_root()
@@ -46,12 +47,18 @@ class Link(object):
 
         for pos in ['L' , 'R']:
             self.create_arm(pos)
-        #     self.create_leg(pos)
+            self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
         self._parent_components()
         self._parent_settings()
+
+        self._load_data()
+
+    def _load_data(self):
+        # ControlFileHandler().apply()
+        pass
 
     def build(self):
         log.info('build')
@@ -146,7 +153,6 @@ class Link(object):
         # Custom arm shapes
         arm_part.ik.pv_ctl.scale_shapes(0.4)
         arm_part.ik.pv_ctl.rotate_shapes([90, 0, 0])
-        arm_part.ik.base_ctl.rotate_shapes([0, 0, 90])
 
         # Pv position
         mult = 1
@@ -167,19 +173,27 @@ class Link(object):
         self.append_part(arm_part)
 
         # Connect parts
-        cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.ik.base_ctl.grp, sr=['x', 'y', 'z'], mo=True)
         cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.fk.get_control(0).grp, sr=['x', 'y', 'z'], mo=True)
-        # cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.fk.fk_joints[0], sr=['x', 'y', 'z'], mo=True)
+        cmds.parentConstraint(collar_part.get_control(0).ctl, arm_part.ik.base_null, sr=['x', 'y', 'z'], mo=True)
 
     def create_leg(self, position):
-        part = IkFk(position, 'leg')
+        leg_part = IkFk(position, 'leg')
         joints = ["%s_leg_%s_jnt" % (position, index) for index in range(3)]
-        part.set_joints(joints)
-        part.create()
-        part.add_stretch()
-        self.append_part(part)
+        leg_part.set_joints(joints)
+        leg_part.create()
+        leg_part.add_stretch()
+        self.append_part(leg_part)
 
-        part.scale_shapes(6)
+        leg_part.scale_shapes(6)
+
+        # Pv position
+        mult = 1
+        if position == 'R':
+            mult = -1
+        leg_part.ik.pv_ctl.set_translates([9.13346 * mult, 48.869499999999995, 50])
+        leg_part.ik.pv_ctl.scale_shapes(0.2)
+        leg_part.ik.pv_ctl.rotate_shapes([-90, 0, 0])
+
 
     def create_hip(self):
         part = Simple('C', 'hip')

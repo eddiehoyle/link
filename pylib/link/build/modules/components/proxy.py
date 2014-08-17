@@ -15,12 +15,13 @@ class Proxy(Component):
     def _collect_imported_nodes(self):
         """Only collect geometry"""
 
-        meshes = cmds.ls("temp:*", type="mesh")
-        nodes = []
-        for mesh in meshes:
-            transform = cmds.listRelatives(mesh, p=True)[0]
-            nodes.append(transform)
-        return nodes
+        # meshes = cmds.ls("temp:*", type="mesh")
+        # nodes = []
+        # for mesh in meshes:
+        #     transform = cmds.listRelatives(mesh, p=True)[0]
+        #     nodes.append(transform)
+
+        return cmds.ls("temp:*")
 
     def _post_create(self):
         super(Proxy, self)._post_create()
@@ -51,8 +52,6 @@ class Proxy(Component):
 
                         for attr in ['translate', 'rotate', 'scale']:
                             cmds.connectAttr("%s.output%s" % (decom_node, attr.capitalize()), "%s.%s" % (geo, attr))
-
-
 
     def connect_settings(self):
         """Connect component nodes to settings node"""

@@ -25,6 +25,7 @@ class IkSc(Part):
         # Important ctls
         self.polevector_ctl = None
         self.ik_ctl = None
+        self.base_null = None
 
         # Ik joints
         self.ik_joints = []
@@ -34,6 +35,9 @@ class IkSc(Part):
 
         # Create new joints
         self.ik_joints = util.joint.duplicate_joints(self.joints, "ik")
+
+        # Add to setups
+        self.setups.extend(self.ik_joints)
 
         # Connect fk jnts to source joints
         for ik_jnt, src_jnt in zip(self.ik_joints, self.joints):
@@ -66,15 +70,17 @@ class IkSc(Part):
         ik_ctl.set_style("cube")
         ik_ctl.lock_scales()
 
-        # Create control
-        base_ctl = Control(self.position, self.description, 1)
-        base_ctl.create()
-
         # Append control
         self.controls[ik_ctl.name] = ik_ctl
-        self.controls[base_ctl.name] = base_ctl
         self.ik_ctl = ik_ctl
-        self.base_ctl = base_ctl
+
+        # ---------------------- #
+        # Create base null
+        self.base_null = cmds.createNode("transform", name=util.name.set_suffix(ik_ctl.name, "baseNull"))
+        util.xform.match_translates(self.base_null, self.ik_joints[0])
+        cmds.pointConstraint(self.base_null, self.ik_joints[0], mo=True)
+        self.setups.append(self.base_null)
+
 
         return self.controls
 
@@ -83,7 +89,6 @@ class IkSc(Part):
 
         # Match IK Handle to end joint
         xform.match_translates(self.ik_ctl.grp, self.ik_joints[-1])
-        xform.match_translates(self.base_ctl.grp, self.ik_joints[0])
 
         # Apply orient offset if found to ik control
         orient_offset = self.offset.get("orient", {})
@@ -104,10 +109,6 @@ class IkSc(Part):
         self.ik_ctl.joint = self.ik_joints[-1]
         con = cmds.orientConstraint(self.ik_ctl.ctl, self.ik_ctl.joint, mo=True)[0]
         cmds.setAttr("%s.interpType" % con, 2)
-
-        # Base ctl
-        self.base_ctl.joint = self.ik_joints[0]
-        con = cmds.pointConstraint(self.base_ctl.ctl, self.base_ctl.joint, mo=True)[0]
 
     def add_stretch(self):
         """Drive ik_joints by translateX and distance between start and end"""
@@ -141,7 +142,7 @@ class IkSc(Part):
 
         # Parent dst locs
         cmds.parent(loc_end, self.ik_ctl.ctl)
-        cmds.parent(loc_start, self.base_ctl.ctl)
+        cmds.parent(loc_start, self.base_null)
 
         for ik_jnt, src_jnt in zip(self.ik_joints[:-1], self.joints):
 
@@ -228,5 +229,5 @@ class IkRp(IkSc):
 
         self.pv_ctl.rotate_shapes([-90, 0, 0])
         self.pv_ctl.scale_shapes(0.5)
-        self.base_ctl.rotate_shapes([0, 0, 90])
+        # self.108_ctl.rotate_shapes([0, 0, 90])
         self.add_stretch()
