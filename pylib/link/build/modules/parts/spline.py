@@ -27,7 +27,10 @@ class IkSpline(Part):
         # Ik specific control dict
         self.ik_controls = OrderedDict()
 
+        self.detail = 3
+
     def _duplicate_joints(self):
+
         # Create new joints
         self.ik_joints = util.joint.duplicate_joints(self.joints, "ik")
 
@@ -35,12 +38,23 @@ class IkSpline(Part):
         for ik_jnt, src_jnt in zip(self.ik_joints, self.joints):
             cmds.parentConstraint(ik_jnt, src_jnt, mo=True)
 
+        # Add to setups
+        self.setups.extend(self.ik_joints)
+
     def create_ik(self):
         """Ik spline"""
 
+        # Create curve
+        tmp_curve = util.curve.create_from_nodes(self.joints, name=util.name.set_suffix(self.name, 'ikCrv'), degree=3)
+        self.curve = util.curve.rebuild_curve(tmp_curve, 3)[0]
+
         start_joint, end_joint = self.ik_joints[0], self.ik_joints[-1]
         logger.info("Creating Ik using nodes: %s" % self.joints)
-        self.ik, self.effector, self.curve = cmds.ikHandle(sj=start_joint, ee=end_joint, sol="ikSplineSolver", ns=3)
+        self.ik, self.effector = cmds.ikHandle(name=util.name.set_suffix(self.name, 'ikh'), sj=start_joint, ee=end_joint, curve=self.curve, createCurve=False, sol="ikSplineSolver", ns=3)
+
+        # Add to setups
+        self.setups.extend([self.ik, self.curve])
+
 
         # Set attrs
         cmds.setAttr("%s.dTwistControlEnable" % self.ik, 1)
@@ -88,7 +102,7 @@ class IkSpline(Part):
             index += 1
 
         # Lock mid controls rotates
-        self.ik_controls['mid'].lock_rotates()
+        self.ik_controls['mid'].lock_scales()
 
         return self.controls
 
@@ -143,6 +157,20 @@ class IkSpline(Part):
             cmds.setAttr("%s.input1X" % jnt_mlt, val)
 
             cmds.connectAttr("%s.outputX" % jnt_mlt, "%s.translateX" % jnt)
+
+    def connect_settings(self):
+
+        for jnt in self.ik_joints:
+            cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % jnt)
+            cmds.connectAttr("%s.helpers" % self.settings_node, "%s.displayLocalAxis" % jnt)
+
+        for node in [self.ik, self.curve]:
+            cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % node)
+
+        for key, cls in self.clusters.items():
+            cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % cls)
+
+
 
     def test_create(self):
         cmds.file(new=True, force=True)

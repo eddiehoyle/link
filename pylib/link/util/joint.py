@@ -24,7 +24,8 @@ def create_chain(num, axis, value, description='temp'):
 
     # Add shapes
     for joint in joints:
-        util.shape.add_shape(joint)
+        shape = util.shape.add_shape(joint)
+        cmds.setAttr("%s.visibility" % shape, 0)
         
     return joints
 
@@ -39,7 +40,8 @@ def duplicate_joints(joints, description_suffix):
         new_jnts.append(new_jnt)
 
     for jnt in new_jnts:
-        util.shape.add_shape(jnt)
+        shape = util.shape.add_shape(jnt)
+        cmds.setAttr("%s.visibility" % shape, 0)
 
     # Joints may already be at world level
     try:

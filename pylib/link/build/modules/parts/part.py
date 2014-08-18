@@ -44,7 +44,7 @@ class Part(Module):
 
     def add_settings(self):
         if not cmds.objExists("%s.helpers" % self.settings_node):
-            cmds.addAttr(self.settings_node, ln="helpers", at='double', dv=0)
+            cmds.addAttr(self.settings_node, ln="helpers", at='double', dv=0, min=0, max=1)
             cmds.setAttr("%s.helpers" % self.settings_node, cb=True)
             cmds.setAttr("%s.helpers" % self.settings_node, k=False)
 

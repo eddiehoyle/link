@@ -4,4 +4,4 @@
 
 # for __mod in __modules:
 #     __import__('link.util.%s' % __mod)
-from link.util import attr, common, name, part, anno, shape, io
+from link.util import attr, curve, common, part, anno, shape, io
