@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from link.util import name, xform, joint
-from link.util import common, vector, joint
 from link.util.control.control import Control
 from link import util
 from maya import cmds
@@ -17,7 +15,7 @@ class IkSpline(Part):
     def __init__(self, position, description):
         super(IkSpline, self).__init__(position, description)
 
-        self.name = name.set_description(self.name, self.description)
+        self.name = util.name.set_description(self.name, self.description)
 
         # Important nodes
         self.ik = None
@@ -27,6 +25,7 @@ class IkSpline(Part):
         # Ik specific control dict
         self.ik_controls = OrderedDict()
 
+        # Add meeee
         self.detail = 3
 
     def _duplicate_joints(self):
@@ -34,7 +33,7 @@ class IkSpline(Part):
         # Create new joints
         self.ik_joints = util.joint.duplicate_joints(self.joints, "ik")
 
-        # Connect fk jnts to source joints
+        # Connect ik jnts to source joints
         for ik_jnt, src_jnt in zip(self.ik_joints, self.joints):
             cmds.parentConstraint(ik_jnt, src_jnt, mo=True)
 
@@ -54,7 +53,6 @@ class IkSpline(Part):
 
         # Add to setups
         self.setups.extend([self.ik, self.curve])
-
 
         # Set attrs
         cmds.setAttr("%s.dTwistControlEnable" % self.ik, 1)
@@ -170,8 +168,6 @@ class IkSpline(Part):
         for key, cls in self.clusters.items():
             cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % cls)
 
-
-
     def test_create(self):
         cmds.file(new=True, force=True)
 
@@ -189,11 +185,17 @@ class IkFkSpline(Part):
         self.ik = IkSpline(position, description)
         self.fk = FkChain(position, description)
 
+        # Ik joint logic override
         self.ik._duplicate_joints = self._ik_duplicate_joints
+        self.fk._duplicate_joints = self._fk_duplicate_joints
 
     def _ik_duplicate_joints(self):
-        # Create new joints
         self.ik.ik_joints = util.joint.duplicate_joints(self.ik.joints, "ik")
+        self.setups.extend(self.ik.ik_joints)
+
+    def _fk_duplicate_joints(self):
+        self.fk.fk_joints = util.joint.duplicate_joints(self.fk.joints, "fk")
+        self.setups.extend(self.fk.fk_joints)
 
     def _pre_create(self):
         super(IkFkSpline, self)._pre_create()
@@ -226,33 +228,38 @@ class IkFkSpline(Part):
         self.fk.match_controls()
 
     def add_stretch(self):
-        return
-        self.ik.add_stretch()
-        self.fk.add_stretch()
+        logger.warning("Stretch unavailable for: %s" % self.__class__.__name__)
+        # self.ik.add_stretch()
+        # self.fk.add_stretch()
 
     def parent_controls(self):
         self.ik.parent_controls()
         self.fk.parent_controls()
 
     def connect_settings(self):
+        self.ik.connect_settings()
+        self.fk.connect_settings()
         self.connect_ikfk()
 
     def connect_ikfk(self):
         for ik_jnt, fk_ctl_key in zip(self.ik.ik_joints, self.fk.controls.keys()):
             fk_ctl = self.fk.controls[fk_ctl_key]
-            cmds.parentConstraint(ik_jnt, fk_ctl.grp, mo=True)
 
-            # fk_rotate_pma = fk_ctl.pma_rotate
-            # index = 2
-            # for axis in ["X", "Y", "Z"]:
-            #     val = cmds.getAttr("%s.rotate%s" % (ik_jnt, axis))
-            #     pma_null = cmds.createNode("plusMinusAverage")
-            #     cmds.connectAttr("%s.rotate%s" % (ik_jnt, axis), "%s.input3D[0].input3D%s" % (pma_null, axis.lower()))
-            #     cmds.setAttr("%s.input3D[1].input3D%s" % (pma_null, axis.lower()), val * -1)
-            #     cmds.connectAttr("%s.output3D.output3D%s" % (pma_null, axis.lower()), "%s.input3D[%s].input3D%s" % (fk_rotate_pma, index, axis.lower()))
+            fk_rotate_pma = cmds.createNode("plusMinusAverage")
+            for axis in ["X", "Y", "Z"]:
 
-    # def create(self):
-    #     pass
+                val = cmds.getAttr("%s.jointOrient%s" % (ik_jnt, axis))
+                cmds.connectAttr("%s.rotate%s" % (ik_jnt, axis), "%s.input3D[0].input3D%s" % (fk_rotate_pma, axis.lower()))
+                cmds.setAttr("%s.input3D[1].input3D%s" % (fk_rotate_pma, axis.lower()), val)
+                cmds.connectAttr("%s.output3D.output3D%s" % (fk_rotate_pma, axis.lower()), "%s.rotate%s" % (fk_ctl.grp, axis))
+
+    def _tidy_up(self):
+        """Collect ik and fk nodes"""
+
+        self.setups.extend(self.ik.setups)
+        self.setups.extend(self.fk.setups)
+
+        super(IkFkSpline, self)._tidy_up()
 
     def test_create(self):
         cmds.file(new=True, force=True)
@@ -262,4 +269,4 @@ class IkFkSpline(Part):
         self.set_joints(joints)
 
         self.create()
-        # self.add_stretch()
+        self.add_stretch()

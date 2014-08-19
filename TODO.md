@@ -18,6 +18,7 @@
 
 
 ## Fundamental
+- [ ] 
 - [ ] Tidy module creation
 - [x] Split part creation so multi-parts can be made easier
 - [x] Write test create methods for parts
@@ -29,7 +30,9 @@
 
 
 ## Parts
+- [ ] Add IkFk stretch
 - [ ] Fix IkFkSpline
+- [ ] Add detail to IkSpline for number of controls, clusters, etc
 - [ ] Raise exception if no joints are given to a part in set_joints
 - [x] Write Fk part
 - [x] Write FkChain part
