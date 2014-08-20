@@ -5,10 +5,10 @@
 
 from link.util.control.control import Control
 from maya import cmds
-from link.build.modules.parts.part import Part
-from link.build.modules.parts.ik import IkSc, IkRp
-from link.build.modules.parts.fk import FkChain
-from link.build.modules.parts.simple import Simple
+from link.modules.parts.part import Part
+from link.modules.parts.ik import IkSc, IkRp
+from link.modules.parts.fk import FkChain
+from link.modules.parts.simple import Simple
 import logging
 logger = logging.getLogger(__name__)
 

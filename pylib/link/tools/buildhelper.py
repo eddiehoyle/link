@@ -2,7 +2,7 @@
 
 from functools import partial
 from maya import cmds
-from link.build.modules.parts import fk, ik, ikfk
+from link.modules.parts import fk, ik, ikfk
 from link.util import python
 
 class PartTests(object):

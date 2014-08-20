@@ -5,7 +5,8 @@
 
 from link.util.control.control import Control
 from maya import cmds
-from link.build.modules.parts.part import Part
+from link.util import name, joint, xform, vector, anno, common
+from link.modules.parts.part import Part
 import logging
 logger = logging.getLogger(__name__)
 

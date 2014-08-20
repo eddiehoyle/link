@@ -5,8 +5,11 @@
 
 from maya import cmds
 from link.util import name, xform
-from link.build.modules.module import Module
+from link.modules.module import Module
 from collections import OrderedDict
+
+import logging
+log = logging.getLogger(__name__)
 
 class Part(Module):
     '''Joint dependent animation base class'''
@@ -106,8 +109,13 @@ class Part(Module):
     def get_control(self, index):
         try:
             return self.controls[self.controls.keys()[index]]
-        except IndexError as e:
-            raise IndexError("Control index not found: %s" % index)
+        except KeyError:
+            log.warning("%s not in: %s" % (self.controls.keys()[index], self.controls.keys()))
+            return None
+        except IndexError:
+            log.warning("Index %s out of range: %s" % (index, len(self.controls.keys())))
+            return None
+
 
     def scale_shapes(self, value):
         """Scale all control shapes"""

@@ -1,5 +1,5 @@
 from maya import cmds
-from link.build.modules.components.component import Component
+from link.modules.components.component import Component
 
 class Skeleton(Component):
     '''Imports and stuff'''

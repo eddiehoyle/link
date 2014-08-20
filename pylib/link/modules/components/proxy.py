@@ -5,7 +5,7 @@
 
 from link.util import xform, name
 from maya import cmds
-from link.build.modules.components.component import Component
+from link.modules.components.component import Component
 
 class Proxy(Component):
     '''Imports and stuff'''

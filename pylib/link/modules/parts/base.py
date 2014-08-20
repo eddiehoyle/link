@@ -6,7 +6,7 @@
 from link import util
 from link.util.control.control import Control
 from maya import cmds
-from link.build.modules.parts.simple import Simple
+from link.modules.parts.simple import Simple
 
 class Base(Simple):
     '''Basic FK control with no hierarchy'''

@@ -6,9 +6,10 @@
 from link.util import name, joint, curve, xform
 from link.util.control.control import Control
 from maya import cmds
-from link.build.modules.parts.part import Part
-from link.build.modules.parts.fk import FkChain
+from link.modules.parts.part import Part
+from link.modules.parts.fk import FkChain
 from collections import OrderedDict
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -192,6 +193,12 @@ class IkFkSpline(Part):
         self.ik._duplicate_joints = self._ik_duplicate_joints
         self.fk._duplicate_joints = self._fk_duplicate_joints
 
+        self._offset_fk_joints = []
+
+    def offset_fk_joints(self, joints):
+        log.warning("Offset fk joints not supported yet.")
+        self.fk.set_joints(joints)
+
     def _ik_duplicate_joints(self):
         self.ik.ik_joints = joint.duplicate_joints(self.ik.joints, "ik")
         self.setups.extend(self.ik.ik_joints)
@@ -245,16 +252,32 @@ class IkFkSpline(Part):
         self.connect_ikfk()
 
     def connect_ikfk(self):
+
         for ik_jnt, fk_ctl_key in zip(self.ik.ik_joints, self.fk.controls.keys()):
-            fk_ctl = self.fk.controls[fk_ctl_key]
+            
+            ctl = self.fk.controls[fk_ctl_key]
+            cmds.orientConstraint(ik_jnt, ctl.grp, mo=True)
 
-            fk_rotate_pma = cmds.createNode("plusMinusAverage")
-            for axis in ["X", "Y", "Z"]:
+        ik_joints = self.ik.ik_joints
+        fk_ctls = [self.fk.controls[k] for k in self.fk.controls.keys()]
 
-                val = cmds.getAttr("%s.jointOrient%s" % (ik_jnt, axis))
-                cmds.connectAttr("%s.rotate%s" % (ik_jnt, axis), "%s.input3D[0].input3D%s" % (fk_rotate_pma, axis.lower()))
-                cmds.setAttr("%s.input3D[1].input3D%s" % (fk_rotate_pma, axis.lower()), val)
-                cmds.connectAttr("%s.output3D.output3D%s" % (fk_rotate_pma, axis.lower()), "%s.rotate%s" % (fk_ctl.grp, axis))
+        print len(self.ik.ik_joints) - len(self.fk.fk_joints), len(ik_joints)
+        for index in range(len(self.ik.ik_joints) - len(self.fk.fk_joints), len(ik_joints)):
+            fk_ctl = self.fk.get_control(index)
+
+            for child_index in range(index + 1, len(ik_joints)):
+                fk_child_ctl = self.fk.get_control(child_index)
+
+                if fk_child_ctl:
+                    cons = cmds.listConnections(fk_child_ctl.inb, type='plusMinusAverage', scn=True, s=True, d=False, p=False)
+                    if not cons:
+                        pma = cmds.createNode("plusMinusAverage", name=name.set_suffix(fk_child_ctl.name, "ctlOrient"))
+                        cmds.connectAttr("%s.output3D" % pma, "%s.rotate" % fk_child_ctl.inb)
+                    else:
+                        pma = cons[0]
+                    
+                    v = cmds.getAttr("%s.input3D" % pma, size=True)
+                    cmds.connectAttr("%s.rotate" % fk_ctl.ctl, "%s.input3D[%s]" % (pma, index))
 
     def _tidy_up(self):
         """Collect ik and fk nodes"""

@@ -1,14 +1,18 @@
+#!/usr/bin/env python
+
+"""
+"""
 
 from link.config import Config
 from maya import cmds
-from link.build.modules.components.skeleton import Skeleton
-from link.build.modules.components.proxy import Proxy
-from link.build.modules.parts.fk import FkChain
-from link.build.modules.parts.ik import IkRp
-from link.build.modules.parts.simple import Simple
-from link.build.modules.parts.base import Base
-from link.build.modules.parts.ikfk import IkFk
-from link.build.modules.parts.spline import IkSpline, IkFkSpline
+from link.modules.components.skeleton import Skeleton
+from link.modules.components.proxy import Proxy
+from link.modules.parts.fk import FkChain
+from link.modules.parts.ik import IkRp
+from link.modules.parts.simple import Simple
+from link.modules.parts.base import Base
+from link.modules.parts.ikfk import IkFk
+from link.modules.parts.spline import IkSpline, IkFkSpline
 from link.util.io.control import ControlFileHandler
 
 import logging
@@ -38,15 +42,15 @@ class Link(object):
         self.create_proxy()
 
         # Parts
-        # self.create_hat()
-        # self.create_neck()
+        self.create_hat()
+        self.create_neck()
         self.create_spine()
         # self.create_root()
         # self.create_hip()
 
-        # for pos in ['L' , 'R']:
-        #     self.create_arm(pos)
-        #     self.create_leg(pos)
+        for pos in ['L' , 'R']:
+            self.create_arm(pos)
+            self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
@@ -86,7 +90,7 @@ class Link(object):
 
     def create_skeleton(self):
         component = Skeleton('C', 'skeleton')
-        _file = "Users/eddiehoyle/Python/link/resources/skeleton.ma"
+        _file = "Users/eddiehoyle/Python/link/resources/skeleton2.ma"
         component.set_file(_file)
         component.create()
 
@@ -181,7 +185,6 @@ class Link(object):
         leg_part.ik.pv_ctl.scale_shapes(0.2)
         leg_part.ik.pv_ctl.rotate_shapes([-90, 0, 0])
 
-
     def create_hip(self):
         part = Simple('C', 'hip')
         part.set_joints(["C_spine_0_jnt"])
@@ -205,6 +208,8 @@ class Link(object):
         part.set_joints(["C_spine_%s_jnt" % index for index in range(5)])
         part.create()
         part.add_stretch()
+
+
 
         self.append_part(part)
         part.scale_shapes(10)        

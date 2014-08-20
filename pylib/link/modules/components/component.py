@@ -5,7 +5,7 @@
 
 from link.util import name
 from maya import cmds
-from link.build.modules.module import Module
+from link.modules.module import Module
 import logging
 log = logging.getLogger(__name__)
 

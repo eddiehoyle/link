@@ -3,7 +3,7 @@
 """
 """
 
-from link.util import attr, name
+from link.util import attr, name, xform
 from link.util.control.shape import Shape
 from link.util.control.transform import Transform
 from link import util
@@ -22,6 +22,7 @@ class Control(object):
         self.name = name.create_name(self.position, self.description, self.index, self.suffix)
 
         self._group = None
+        self._inb = None
         self._transform = Transform(self.name)
         self._shape = Shape(self.name)
         self._style = style
@@ -34,6 +35,10 @@ class Control(object):
     @property
     def ctl(self):
         return self._transform.node
+
+    @property
+    def inb(self):
+        return self._inb
 
     @property
     def shapes(self):
@@ -51,9 +56,11 @@ class Control(object):
 
         self._group = cmds.createNode("transform", name=name.set_suffix(self.name, "grp"))
         self._transform.create()
+        self._inb = cmds.createNode("transform", name=name.set_suffix(self.name, "inb"))
         self._shape.create(self.ctl, style=self._style)
 
-        cmds.parent(self.ctl, self.grp)
+        cmds.parent(self.ctl, self.inb)
+        cmds.parent(self.inb, self.grp)
 
         # Lock vis auto
         self.lock_vis()
