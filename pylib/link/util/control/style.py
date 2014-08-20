@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+
+"""
+"""
+
 from maya import cmds
 
 class Style(object):

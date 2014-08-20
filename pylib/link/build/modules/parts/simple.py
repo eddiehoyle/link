@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-from link.util import name, xform, joint
-from link.util import common
+"""
+"""
+
 from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.part import Part
@@ -28,11 +29,6 @@ class Simple(Part):
             self.controls[ctl.name] = ctl
 
         return self.controls
-
-    def connect_controls(self):
-        pass
-        # for key, joint in zip(self.controls.keys(), self.joints):
-        #     cmds.parentConstraint(self.controls[key].ctl, joint, mo=True)
 
     def test_create(self):
         cmds.file(new=True, force=True)

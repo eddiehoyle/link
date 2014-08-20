@@ -1,7 +1,11 @@
-from link.util import name
+#!/usr/bin/env python
+
+"""
+"""
+
 from maya import cmds
+from link.util import name, xform
 from link.build.modules.module import Module
-from link import util
 from collections import OrderedDict
 
 class Part(Module):
@@ -11,6 +15,7 @@ class Part(Module):
         super(Part, self).__init__(position, description)
 
         self.suffix = "prt"
+
         self.name = name.set_suffix(self.name, self.suffix)
         self.controls = OrderedDict()
         self.joints = OrderedDict()
@@ -67,27 +72,27 @@ class Part(Module):
         """Match each controls groups translates to it's designated joint"""
 
         for joint, key in zip(self.joints, self.controls.keys()):
-            util.xform.match_translates(self.controls[key].grp, joint)
+            xform.match_translates(self.controls[key].grp, joint)
 
         # Set custom point at creation time
         point_offset = self.offset.get("point", {})
         if point_offset:
             vector = point_offset['vector']
             world = point_offset['world']
-            util.xform.set_translates(self.controls[key].grp, vector, world)
+            xform.set_translates(self.controls[key].grp, vector, world)
 
     def match_rotates(self, target=None):
         """Match each controls groups rotates to it's designated joint"""
 
         for joint, key in zip(self.joints, self.controls.keys()):
-            util.xform.match_rotates(self.controls[key].grp, joint)
+            xform.match_rotates(self.controls[key].grp, joint)
 
         # Set custom orient at creation time
         orient_offset = self.offset.get("orient", {})
         if orient_offset:
             vector = orient_offset['vector']
             world = orient_offset['world']
-            util.xform.set_rotates(self.controls[key].grp, vector, world)
+            xform.set_rotates(self.controls[key].grp, vector, world)
 
 
     def connect_controls(self):
@@ -130,11 +135,11 @@ class Part(Module):
 
     def set_translates(self, array):
         for key, ctl in self.controls.items():
-            util.xform.set_translates(ctl.grp, array, world=world)
+            xform.set_translates(ctl.grp, array, world=world)
 
     def set_rotates(self, array, world=False):
         for key, ctl in self.controls.items():
-            util.xform.set_rotates(ctl.grp, array, world=world)
+            xform.set_rotates(ctl.grp, array, world=world)
 
     def test_create(self):
         """Single test creation methods for part"""

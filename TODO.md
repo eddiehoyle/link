@@ -60,7 +60,7 @@
 
 ## Utils
 - [x] Write attribute library (properly)
-- [ ] Tidy up util.name 
-- [ ] Tidy up util.attr
+- [ ] Tidy up name 
+- [ ] Tidy up attr
 - [x] Add vector utils
 - [x] Add joint utils for easy joint creation for test methods

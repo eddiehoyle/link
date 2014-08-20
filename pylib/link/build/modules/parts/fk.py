@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from link.util import name, xform, constraint
-from link.util import common, joint
-from link import util
+"""
+"""
+
+from link.util import name
 from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.simple import Simple
@@ -25,7 +26,7 @@ class FkChain(Simple):
         """Create a duplicate FK joint chain to drive rig"""
 
         # Create new joints
-        self.fk_joints = util.joint.duplicate_joints(self.joints, "fk")
+        self.fk_joints = joint.duplicate_joints(self.joints, "fk")
 
         # Add to setups
         self.setups.extend(self.fk_joints)
@@ -128,6 +129,6 @@ class FkChain(Simple):
         self.set_joints(jnts)
         self.create()
         self.rotate_shapes([0, 0, 90])
-        self.add_stretch()
+        # self.add_stretch()
 
 

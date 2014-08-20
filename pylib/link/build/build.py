@@ -1,7 +1,6 @@
 
 from link.config import Config
 from maya import cmds
-from link import util
 from link.build.modules.components.skeleton import Skeleton
 from link.build.modules.components.proxy import Proxy
 from link.build.modules.parts.fk import FkChain
@@ -41,18 +40,17 @@ class Link(object):
         # Parts
         # self.create_hat()
         # self.create_neck()
-        # self.create_spine()
+        self.create_spine()
         # self.create_root()
         # self.create_hip()
 
-        for pos in ['L' , 'R']:
-            self.create_arm(pos)
-            self.create_leg(pos)
+        # for pos in ['L' , 'R']:
+        #     self.create_arm(pos)
+        #     self.create_leg(pos)
 
     def _post_build(self):
         self._parent_parts()
         self._parent_components()
-        self._parent_settings()
 
         self._load_data()
 
@@ -85,17 +83,6 @@ class Link(object):
         log.info("Parenting %s component(s)" % len(self.components.keys()))
         for key, comp in self.components.items():
             cmds.parent(comp.top_node, self.comp_node)
-
-    def _parent_settings(self):
-        pass
-        # for key, comp in self.components.items():
-        #     cmds.parent(cmds.listRelatives(comp.settings_node, parent=True)[0], self.settings_node)
-
-        # for key, part in self.parts.items():
-            # cmds.parent(cmds.listRelatives(part.settings_node, parent=True)[0], self.settings_node)
-
-            # for ctl_key, ctl in part.controls.items():
-            #     cmds.parent(part.settings_node, ctl.ctl, shape=True, add=True)
 
     def create_skeleton(self):
         component = Skeleton('C', 'skeleton')

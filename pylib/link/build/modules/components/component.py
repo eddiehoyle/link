@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+"""
+"""
 
 from link.util import name
 from maya import cmds

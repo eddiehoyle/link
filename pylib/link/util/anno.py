@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from maya import cmds
-from link.util import name
 
 def aim(source, target, string):
     """Create annotation and aim it at target"""

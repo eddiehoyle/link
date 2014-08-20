@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+"""
+"""
+
+from link.util import attr, name
 from link.util.control.shape import Shape
 from link.util.control.transform import Transform
 from link import util
@@ -15,7 +19,7 @@ class Control(object):
         self.index = index
         self.suffix = "ctl"
 
-        self.name = util.name.create_name(self.position, self.description, self.index, self.suffix)
+        self.name = name.create_name(self.position, self.description, self.index, self.suffix)
 
         self._group = None
         self._transform = Transform(self.name)
@@ -45,7 +49,7 @@ class Control(object):
 
     def create(self):
 
-        self._group = cmds.createNode("transform", name=util.name.set_suffix(self.name, "grp"))
+        self._group = cmds.createNode("transform", name=name.set_suffix(self.name, "grp"))
         self._transform.create()
         self._shape.create(self.ctl, style=self._style)
 
@@ -64,28 +68,28 @@ class Control(object):
         self._shape.rotate_shapes(value, world=world)
 
     def lock_translates(self):
-        util.attr.lock_translates(self.ctl)
+        attr.lock_translates(self.ctl)
 
     def lock_rotates(self):
-        util.attr.lock_rotates(self.ctl)
+        attr.lock_rotates(self.ctl)
 
     def lock_scales(self):
-        util.attr.lock_scales(self.ctl)
+        attr.lock_scales(self.ctl)
 
     def lock_all(self):
-        util.attr.lock_all(self.ctl)
+        attr.lock_all(self.ctl)
 
     def lock_vis(self):
-        util.attr.lock_vis(self.ctl)
+        attr.lock_vis(self.ctl)
 
     def set_translates(self, array, world=False):
-        util.xform.set_translates(self.grp, array, world=world)
+        xform.set_translates(self.grp, array, world=world)
 
     def set_rotates(self, array, world=False):
-        util.xform.set_rotates(self.grp, array, world=world)
+        xform.set_rotates(self.grp, array, world=world)
 
     def set_point_offset(self, vector, world=False):
-        util.xform.set_translates(self.grp, vector, world=world)
+        xform.set_translates(self.grp, vector, world=world)
 
     def set_orient_offset(self, vector, world=False):
-        util.xform.set_rotates(self.grp, vector, world=world)
+        xform.set_rotates(self.grp, vector, world=world)

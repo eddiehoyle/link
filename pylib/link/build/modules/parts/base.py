@@ -1,6 +1,9 @@
+#!/usr/bin/env python
 
-from link.util import name, xform
-from link.util import common
+"""
+"""
+
+from link import util
 from link.util.control.control import Control
 from maya import cmds
 from link.build.modules.parts.simple import Simple

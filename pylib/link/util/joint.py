@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
+from link.util import name, shape
 from maya import cmds
-from link import util
 
 def create_chain(num, axis, value, description='temp'):
     joints = []
@@ -24,8 +24,8 @@ def create_chain(num, axis, value, description='temp'):
 
     # Add shapes
     for joint in joints:
-        shape = util.shape.add_shape(joint)
-        cmds.setAttr("%s.visibility" % shape, 0)
+        _shape = shape.add_shape(joint)
+        cmds.setAttr("%s.visibility" % _shape, 0)
         
     return joints
 
@@ -35,13 +35,13 @@ def duplicate_joints(joints, description_suffix):
     temp_joints = cmds.duplicate(joints, rc=True, parentOnly=True)
     new_jnts = []
     for jnt in temp_joints:
-        new_jnt = util.name.set_description_suffix(jnt[:-1], description_suffix)
+        new_jnt = name.set_description_suffix(jnt[:-1], description_suffix)
         cmds.rename(jnt, new_jnt)
         new_jnts.append(new_jnt)
 
     for jnt in new_jnts:
-        shape = util.shape.add_shape(jnt)
-        cmds.setAttr("%s.visibility" % shape, 0)
+        _shape = shape.add_shape(jnt)
+        cmds.setAttr("%s.visibility" % _shape, 0)
 
     # Joints may already be at world level
     try:

@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+"""
+"""
+
 from maya import cmds
+from link.util import name, common
 from link.util.control.style import Style
-from link.util import common
-from link.util import name
 import logging
 log = logging.getLogger(__name__)
 

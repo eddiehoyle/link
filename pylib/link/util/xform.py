@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+"""
+"""
+from link.util import vector
 from maya import cmds
-from link import util
+
 def match(target, source):
     """Match target to source xform"""
     match_translates(target, source)
@@ -36,5 +39,5 @@ def match_average_position(target, sources):
         vec3f = cmds.xform(source, q=True, ws=True, t=True)
         vectors.append(vec3f)
 
-    average = util.vector.average_vector3f(vectors)
+    average = vector.average_vector3f(vectors)
     cmds.xform(target, ws=True, t=average)

@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+"""
+"""
+
+from link.util import name, joint, curve, xform
 from link.util.control.control import Control
-from link import util
 from maya import cmds
 from link.build.modules.parts.part import Part
 from link.build.modules.parts.fk import FkChain
@@ -15,7 +18,7 @@ class IkSpline(Part):
     def __init__(self, position, description):
         super(IkSpline, self).__init__(position, description)
 
-        self.name = util.name.set_description(self.name, self.description)
+        self.name = name.set_description(self.name, self.description)
 
         # Important nodes
         self.ik = None
@@ -31,7 +34,7 @@ class IkSpline(Part):
     def _duplicate_joints(self):
 
         # Create new joints
-        self.ik_joints = util.joint.duplicate_joints(self.joints, "ik")
+        self.ik_joints = joint.duplicate_joints(self.joints, "ik")
 
         # Connect ik jnts to source joints
         for ik_jnt, src_jnt in zip(self.ik_joints, self.joints):
@@ -44,12 +47,12 @@ class IkSpline(Part):
         """Ik spline"""
 
         # Create curve
-        tmp_curve = util.curve.create_from_nodes(self.joints, name=util.name.set_suffix(self.name, 'ikCrv'), degree=3)
-        self.curve = util.curve.rebuild_curve(tmp_curve, 3)[0]
+        tmp_curve = curve.create_from_nodes(self.joints, name=name.set_suffix(self.name, 'ikCrv'), degree=3)
+        self.curve = curve.rebuild_curve(tmp_curve, 3)[0]
 
         start_joint, end_joint = self.ik_joints[0], self.ik_joints[-1]
         logger.info("Creating Ik using nodes: %s" % self.joints)
-        self.ik, self.effector = cmds.ikHandle(name=util.name.set_suffix(self.name, 'ikh'), sj=start_joint, ee=end_joint, curve=self.curve, createCurve=False, sol="ikSplineSolver", ns=3)
+        self.ik, self.effector = cmds.ikHandle(name=name.set_suffix(self.name, 'ikh'), sj=start_joint, ee=end_joint, curve=self.curve, createCurve=False, sol="ikSplineSolver", ns=3)
 
         # Add to setups
         self.setups.extend([self.ik, self.curve])
@@ -71,8 +74,8 @@ class IkSpline(Part):
         clusters['mid'] = cmds.cluster(["%s.cv[2]" % self.curve, "%s.cv[3]" % self.curve])[1]
         clusters['top'] = cmds.cluster(["%s.cv[4]" % self.curve, "%s.cv[5]" % self.curve])[1]
         
-        util.xform.match_pivot(start_joint, clusters['bot'])
-        util.xform.match_pivot(end_joint, clusters['top'])
+        xform.match_pivot(start_joint, clusters['bot'])
+        xform.match_pivot(end_joint, clusters['top'])
 
         self.clusters = clusters
 
@@ -110,11 +113,11 @@ class IkSpline(Part):
         mid_ctl = self.ik_controls['mid']
         top_ctl = self.ik_controls['top']
 
-        util.xform.match_translates(bot_ctl.grp, self.joints[0])
-        util.xform.match_translates(top_ctl.grp, self.joints[-1])
+        xform.match_translates(bot_ctl.grp, self.joints[0])
+        xform.match_translates(top_ctl.grp, self.joints[-1])
 
         # Get mid position
-        util.xform.match_average_position(mid_ctl.grp, [top_ctl.grp, bot_ctl.grp])
+        xform.match_average_position(mid_ctl.grp, [top_ctl.grp, bot_ctl.grp])
 
     def connect_controls(self):
 
@@ -190,11 +193,11 @@ class IkFkSpline(Part):
         self.fk._duplicate_joints = self._fk_duplicate_joints
 
     def _ik_duplicate_joints(self):
-        self.ik.ik_joints = util.joint.duplicate_joints(self.ik.joints, "ik")
+        self.ik.ik_joints = joint.duplicate_joints(self.ik.joints, "ik")
         self.setups.extend(self.ik.ik_joints)
 
     def _fk_duplicate_joints(self):
-        self.fk.fk_joints = util.joint.duplicate_joints(self.fk.joints, "fk")
+        self.fk.fk_joints = joint.duplicate_joints(self.fk.joints, "fk")
         self.setups.extend(self.fk.fk_joints)
 
     def _pre_create(self):

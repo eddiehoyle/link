@@ -49,6 +49,6 @@ class ControlFileHandler(FileHandler):
 
 
 # from link.util import python as p;p.flush()
-# from link.util.io import control
+# from link.io import control
 # t=control.ControlFileHandler()
 # t.get_data()

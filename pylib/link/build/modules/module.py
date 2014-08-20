@@ -1,5 +1,9 @@
+#!/usr/bin/env python
 
-# from link.util import name, attr, anno
+"""
+"""
+
+from link.util import name, attr, anno
 from link import util
 from maya import cmds
 from functools import partial
@@ -15,7 +19,7 @@ class Module(object):
         self.index = index
         self.suffix = "mod"
 
-        self.name = util.name.create_name(self.position, self.description, self.index, self.suffix)
+        self.name = name.create_name(self.position, self.description, self.index, self.suffix)
         
         self.nodes = []
         self.controls = {}
@@ -26,14 +30,14 @@ class Module(object):
 
         # Create top node
         self.top_node = cmds.createNode("transform", name=self.name)
-        self.control_node = cmds.createNode("transform", name=util.name.set_description_suffix(self.name, "control"))
-        self.setup_node = cmds.createNode("transform", name=util.name.set_description_suffix(self.name, "setup"))
+        self.control_node = cmds.createNode("transform", name=name.set_description_suffix(self.name, "control"))
+        self.setup_node = cmds.createNode("transform", name=name.set_description_suffix(self.name, "setup"))
         cmds.parent([self.setup_node, self.control_node], self.top_node)
 
         # Create settings node
-        loc = cmds.spaceLocator(name=util.name.set_suffix(self.name, "settings"))[0]
+        loc = cmds.spaceLocator(name=name.set_suffix(self.name, "settings"))[0]
         shape = cmds.listRelatives(loc, shapes=True)[0]
-        util.attr.lock_all(loc)
+        attr.lock_all(loc)
 
         # Hide these
         for local in ["localPosition", "localScale"]:

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-from link.util import name, xform, joint
-from link.util import common, vector, joint
+"""
+"""
+
 from link.util.control.control import Control
-from link import util
 from maya import cmds
 from link.build.modules.parts.part import Part
 import logging
@@ -34,7 +34,7 @@ class IkSc(Part):
         """Create a duplicate FK joint chain to drive rig"""
 
         # Create new joints
-        self.ik_joints = util.joint.duplicate_joints(self.joints, "ik")
+        self.ik_joints = joint.duplicate_joints(self.joints, "ik")
 
         # Add to setups
         self.setups.extend(self.ik_joints)
@@ -76,8 +76,8 @@ class IkSc(Part):
 
         # ---------------------- #
         # Create base null
-        self.base_null = cmds.createNode("transform", name=util.name.set_suffix(ik_ctl.name, "baseNull"))
-        util.xform.match_translates(self.base_null, self.ik_joints[0])
+        self.base_null = cmds.createNode("transform", name=name.set_suffix(ik_ctl.name, "baseNull"))
+        xform.match_translates(self.base_null, self.ik_joints[0])
         cmds.pointConstraint(self.base_null, self.ik_joints[0], mo=True)
         self.setups.append(self.base_null)
 
@@ -185,7 +185,7 @@ class IkRp(IkSc):
     def add_polevector(self, description=None, offset=[0, 0, 0]):
         """Add pole vector for ikHandle"""
 
-        description = description or util.name.get_description(util.name.set_description_suffix(self.ik_ctl.ctl, "pv"))
+        description = description or name.get_description(name.set_description_suffix(self.ik_ctl.ctl, "pv"))
         
         # Create control
         ctl = Control(self.position, description)
@@ -219,7 +219,7 @@ class IkRp(IkSc):
 
         # Add annotation
         mid_jnt = self.ik_joints[(len(self.ik_joints)-1)/2]
-        util.anno.aim(ctl.ctl, mid_jnt, "pv")
+        anno.aim(ctl.ctl, mid_jnt, "pv")
 
         self.pv_ctl = ctl
         self.controls[ctl.name] = ctl
