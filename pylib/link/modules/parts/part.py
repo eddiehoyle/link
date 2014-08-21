@@ -97,25 +97,23 @@ class Part(Module):
             world = orient_offset['world']
             xform.set_rotates(self.controls[key].grp, vector, world)
 
-
     def connect_controls(self):
         pass
 
     def parent_controls(self):
         pass
-        # for key, ctl in self.controls.items():
-        #     cmds.parent(ctl.grp, self.top_node)
 
     def get_control(self, index):
+        """Get control by index"""
+
         try:
             return self.controls[self.controls.keys()[index]]
         except KeyError:
             log.warning("%s not in: %s" % (self.controls.keys()[index], self.controls.keys()))
             return None
         except IndexError:
-            log.warning("Index %s out of range: %s" % (index, len(self.controls.keys())))
+            log.warning("Index %s out of controls range: %s" % (index, len(self.controls.keys())))
             return None
-
 
     def scale_shapes(self, value):
         """Scale all control shapes"""
@@ -135,13 +133,13 @@ class Part(Module):
         self.offset['orient'] = dict(vector=vector,
                                      world=world)
 
-    def set_point(self, vector):
+    def set_point(self, vector, world=True):
         """Set an offset point to be applied at creation time"""
 
         self.offset['point'] = dict(vector=vector,
                                     world=world)
 
-    def set_translates(self, array):
+    def set_translates(self, array, world=True):
         for key, ctl in self.controls.items():
             xform.set_translates(ctl.grp, array, world=world)
 

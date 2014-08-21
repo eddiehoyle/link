@@ -12,13 +12,12 @@
 
 
 ## Current issues
-- [ ] Expose smarter get_control() at part level
-- [ ] Expose per control grp offset functionality before build time
+- [x] Expose smarter get_control() at part level
+- [x] Expose per control grp offset functionality before build time
 - [ ] Expose per control shape offset functionality after build time
 
 
 ## Fundamental
-- [ ] 
 - [ ] Tidy module creation
 - [x] Split part creation so multi-parts can be made easier
 - [x] Write test create methods for parts
@@ -30,10 +29,10 @@
 
 
 ## Parts
+- [ ] Look into determining on describing which methods can be run pre or post create
 - [ ] Add IkFk stretch
-- [ ] Fix IkFkSpline
+- [x] Fix IkFkSpline
 - [ ] Add detail to IkSpline for number of controls, clusters, etc
-- [ ] Raise exception if no joints are given to a part in set_joints
 - [x] Write Fk part
 - [x] Write FkChain part
 - [x] Add Fk stretch logic
