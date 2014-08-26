@@ -37,8 +37,9 @@ class Part(Module):
             cmds.parent(self.settings_node, ctl.ctl, shape=True, add=True)
 
     def _create(self):
-        self.setup_controls()
         self.setup_settings()
+        self.setup_controls()
+        
 
     def setup_controls(self):
         self.create_controls()
@@ -146,6 +147,13 @@ class Part(Module):
     def set_rotates(self, array, world=False):
         for key, ctl in self.controls.items():
             xform.set_rotates(ctl.grp, array, world=world)
+
+    def get_joint_positions(self):
+        positions = []
+        for jnt in self.joints:
+            pos = cmds.xform(jnt, q=True, ws=True, t=True)
+            positions.append(pos)
+        return positions
 
     def test_create(self):
         """Single test creation methods for part"""

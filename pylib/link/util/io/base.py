@@ -13,15 +13,17 @@ from link.config import Config
 log = logging.getLogger(__name__)
 
 class FileHandler(object):
-    def __init__(self):
+    def __init__(self, key):
 
         self.config = Config()
-        self.path = os.path.join(self.config.root)
+
+        self.key = key
+        self.path = os.path.join(self.config.root, "%s.json" % self.key)
 
     def get_data(self):
         return {}
 
-    def write(self, data=None):
+    def write(self, data):
         """Write data as json to disk"""
 
         data = data or self.get_data()

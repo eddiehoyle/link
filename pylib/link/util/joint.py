@@ -51,3 +51,28 @@ def duplicate_joints(joints, description_suffix):
 
 
     return new_jnts
+
+def create_from_poisitions(positions):
+    joints = []
+    for vector in positions:
+        jnt = cmds.joint(name="jnt", position=vector)
+        joints.append(jnt)
+
+    # world_nodes = cmds.ls(assemblies=True)
+    joints.reverse()
+    for index, jnt in enumerate(joints):
+        if index + 1 == len(joints):
+            break
+
+        cmds.parent(jnt, joints[index + 1])
+
+
+
+
+
+
+
+
+
+
+
