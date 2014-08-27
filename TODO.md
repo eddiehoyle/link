@@ -17,6 +17,11 @@
 - [ ] Expose per control shape offset functionality after build time
 
 
+## File handling
+- [ ] Consider a versioning system for data files
+- [ ] Write a settings data sub class to handle settings at part level
+
+
 ## Fundamental
 - [ ] Tidy module creation
 - [x] Split part creation so multi-parts can be made easier
@@ -29,6 +34,7 @@
 
 
 ## Parts
+- [ ] Add settings attr to settings node, hidden to determine its a settings node
 - [ ] Look into determining on describing which methods can be run pre or post create
 - [ ] Add IkFk stretch
 - [x] Fix IkFkSpline

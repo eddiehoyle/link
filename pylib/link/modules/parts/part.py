@@ -155,6 +155,10 @@ class Part(Module):
             positions.append(pos)
         return positions
 
+    def display_helpers(self, display):
+        if self.settings_node:
+            cmds.setAttr("%s.helpers" % self.settings_node, display)
+
     def test_create(self):
         """Single test creation methods for part"""
         pass

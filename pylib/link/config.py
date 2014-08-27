@@ -21,3 +21,6 @@ class Config(object):
 
     def get_weights_dir(self):
         return os.path.join(self.root, self.config.get('data', 'weights'))
+
+    def get_settings_dir(self):
+        return os.path.join(self.root, self.config.get('data', 'settings'))        
