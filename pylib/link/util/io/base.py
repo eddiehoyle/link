@@ -18,16 +18,22 @@ class FileHandler(object):
         self.config = Config()
 
         self.key = key
-        self.path = os.path.join(self.config.root, "%s.json" % self.key)
+        self.dir = os.path.join(self.config.root, 'resources')
+        self.path = os.path.join(self.dir, "%s.json" % self.key)
 
-    def get_data(self):
-        return {}
+        log.debug("File key init: %s" % self.dir)
+
+    def _create_dir(self):
+        if not os.path.exists(self.dir):
+            os.mkdir(self.dir)
 
     def write(self, data):
         """Write data as json to disk"""
 
         data = data or self.get_data()
         log.debug("Writing data key(s): %s" % len(data.keys()))
+
+        self._create_dir()
 
         with open(self.path, 'w') as f:
             json.dump(data, f)

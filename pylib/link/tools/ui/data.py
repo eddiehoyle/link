@@ -4,9 +4,11 @@
 """
 
 from maya import cmds
-from link.util.io.base import FileHandler
+from link.util.io.part import PartFileHandler
+import logging
+log = logging.getLogger(__name__)
 
-class DataManager(object):
+class PartDataManager(object):
     def __init__(self):
         self.setup_ui()
 
@@ -20,16 +22,19 @@ class DataManager(object):
         cmds.columnLayout(win, adj=True)
 
         # Simple save and load
-        cmds.button(label="Save", w=100, c=self.save_selected)
-        cmds.button(label="Load", w=100, c=self.load_selected)
+        self.part_field = cmds.textField(w=100, text="L_foot_0")
+        cmds.button(label="Save Part", w=100, c=self.save_selected)
+        cmds.button(label="Load Part", w=100, c=self.load_selected)
 
     def save_selected(self, *args):
         data = self._get_data(cmds.ls(sl=1))
-        f = FileHandler("foot")
+        key = self._get_key()
+        f = PartFileHandler(key)
         f.write(data)
 
     def load_selected(self, *args):
-        f = FileHandler("foot")
+        key = self._get_key()
+        f = PartFileHandler(key)
         data = f.read()
         for key, vector in data.items():
             cmds.setAttr("%s.translate" % key, *vector, type="float3")
@@ -39,6 +44,12 @@ class DataManager(object):
         for node in transforms:
             data[node] = cmds.xform(node, q=True, t=True, ws=True)
         return data
+
+    def _get_key(self):
+        key = cmds.textField(self.part_field, q=True, text=True)
+        if not key:
+            raise ValueError("No part key")
+        return key
 
     def show(self):
         cmds.showWindow(self.__class__.__name__)

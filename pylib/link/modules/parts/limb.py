@@ -91,7 +91,7 @@ class Foot(Part):
         cmds.joint(joints[0], e=True, oj="xyz", sao="yup", ch=True, zso=True)
 
         self.set_joints(joints)
-        self.set_data_file("/Users/eddiehoyle/Python/link/foot.json")
+        # self.set_data_file("/Users/eddiehoyle/Python/link/foot.json")
         self.create()
         
 
