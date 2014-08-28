@@ -72,3 +72,16 @@ def blend_attributes(input1, input2, driver):
 		cmds.connectAttr(input2, "%s.color2R" % bc)
 		cmds.connectAttr(driver, "%s.blender" % bc)
 		return bc
+
+def add_reverse_md(attr1, attr2):
+	md = cmds.createNode("multiplyDivide")
+	cmds.connectAttr(attr1, "%s.input1X" % md)
+	cmds.connectAttr("%s.outputX" % md, attr2, force=True)
+	cmds.setAttr("%s.input2X" % md, -1)
+	return md
+
+
+
+
+
+

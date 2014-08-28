@@ -155,6 +155,9 @@ class IkSc(Part):
 
     def add_settings(self):
         super(IkSc, self).add_settings()
+    
+    def connect_settings(self):
+        super(IkSc, self).connect_settings()    
         cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % self.ik)
 
     def test_create(self):

@@ -4,6 +4,7 @@
 """
 
 from link.util.control.control import Control
+from link.util import joint
 from maya import cmds
 from link.modules.parts.part import Part
 from link.modules.parts.ik import IkSc, IkRp
@@ -34,7 +35,6 @@ class IkFk(Part):
         cmds.addAttr(self.settings_node, ln="fkik", at="double", min=0, max=1, dv=1)
         cmds.setAttr("%s.fkik" % self.settings_node, cb=True)
         cmds.setAttr("%s.fkik" % self.settings_node, k=True)
-        cmds.connectAttr("%s.fkik" % self.settings_node, "%s.ikBlend" % self.ik.ik)
 
         self.ik.add_settings()
         self.fk.add_settings()
@@ -113,6 +113,7 @@ class IkFk(Part):
 
         # Connect base Fk control
         cmds.pointConstraint(self.ik.base_null, self.fk.fk_joints[0], mo=True)
+        cmds.connectAttr("%s.fkik" % self.settings_node, "%s.ikBlend" % self.ik.ik)
 
     def test_create(self, joints=None):
         cmds.file(new=True, force=True)

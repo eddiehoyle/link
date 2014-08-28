@@ -37,8 +37,9 @@ class Part(Module):
             cmds.parent(self.settings_node, ctl.ctl, shape=True, add=True)
 
     def _create(self):
-        self.setup_settings()
+        self.add_settings()
         self.setup_controls()
+        self.connect_settings()
         
 
     def setup_controls(self):
@@ -46,10 +47,6 @@ class Part(Module):
         self.match_controls()
         self.connect_controls()
         self.parent_controls()
-
-    def setup_settings(self):
-        self.add_settings()
-        self.connect_settings()
 
     def add_settings(self):
         if not cmds.objExists("%s.helpers" % self.settings_node):
@@ -157,6 +154,7 @@ class Part(Module):
 
     def display_helpers(self, display):
         if self.settings_node:
+            log.info("Displaying helpers: %s" % self.settings_node)
             cmds.setAttr("%s.helpers" % self.settings_node, display)
 
     def test_create(self):

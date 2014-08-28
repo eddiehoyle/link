@@ -12,6 +12,7 @@ from link.modules.parts.ik import IkRp
 from link.modules.parts.simple import Simple
 from link.modules.parts.base import Base
 from link.modules.parts.ikfk import IkFk
+from link.modules.parts.limb import Foot
 from link.modules.parts.spline import IkSpline, IkFkSpline
 from link.util.io.control import ControlFileHandler
 
@@ -42,14 +43,14 @@ class Link(object):
         self.create_proxy()
 
         # Parts
-        self.create_hat()
-        self.create_neck()
-        self.create_spine()
+        # self.create_hat()
+        # self.create_neck()
+        # self.create_spine()
         # self.create_root()
         # self.create_hip()
 
         for pos in ['L' , 'R']:
-            self.create_arm(pos)
+            # self.create_arm(pos)
             self.create_leg(pos)
 
     def _post_build(self):
@@ -57,6 +58,11 @@ class Link(object):
         self._parent_components()
 
         self._load_data()
+
+        for key, part in self.parts.items():
+            part.display_helpers(True)
+
+
 
     def _load_data(self):
         # ControlFileHandler().apply()
@@ -90,7 +96,7 @@ class Link(object):
 
     def create_skeleton(self):
         component = Skeleton('C', 'skeleton')
-        _file = "Users/eddiehoyle/Python/link/resources/skeleton2.ma"
+        _file = "Users/eddiehoyle/Python/link/resources/skeleton.ma"
         component.set_file(_file)
         component.create()
 
@@ -185,6 +191,22 @@ class Link(object):
         leg_part.ik.pv_ctl.scale_shapes(0.2)
         leg_part.ik.pv_ctl.rotate_shapes([-90, 0, 0])
 
+        # ----------------------------------- #
+        # Foot
+        foot_part = Foot(position, 'foot')
+        joints = ["%s_leg_2_jnt" % (position)]
+        joints.extend(["%s_foot_%s_jnt" % (position, index) for index in range(2)])
+        foot_part.set_joints(joints)
+        foot_part.set_part_file('/Users/eddiehoyle/Python/link/resources/data/parts/%s_foot_0.json' % position)
+        foot_part.set_settings_file('/Users/eddiehoyle/Python/link/resources/data/settings/%s_foot_0.json' % position)
+        foot_part.create()
+
+        # foot_part.set_parent_hook()
+        self.append_part(foot_part)
+
+        foot_part.scale_shapes(3)
+
+
     def create_hip(self):
         part = Simple('C', 'hip')
         part.set_joints(["C_spine_0_jnt"])
@@ -208,8 +230,6 @@ class Link(object):
         part.set_joints(["C_spine_%s_jnt" % index for index in range(5)])
         part.create()
         part.add_stretch()
-
-
 
         self.append_part(part)
         part.scale_shapes(10)        

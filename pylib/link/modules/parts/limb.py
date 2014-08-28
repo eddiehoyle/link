@@ -19,20 +19,32 @@ class Foot(Part):
     def __init__(self, position, description):
         super(Foot, self).__init__(position, description)
 
-        self.data_file = None
+        self.part_file = None
         self.settings_file = None
-        self.data_positions = []        
+        self.data_positions = [] 
+        self.foot_joints = []       
 
         # Specific joint position names
         self.joint_detail = {}
         self.pivot_detail = {}
         self.ik_detail = {}
+        
 
-    def set_data_file(self, path):
-        self.data_file = path
+    def set_part_file(self, path):
+        self.part_file = path
 
     def set_settings_file(self, path):
-        self.settings_file = path        
+        self.settings_file = path     
+
+    def _duplicate_joints(self):
+        """Create a duplicate FK joint chain to drive rig"""
+
+        self.foot_joints = joint.duplicate_joints(self.joints, "foot")
+        self.setups.extend(self.foot_joints) 
+
+        self.joint_detail['ankle'] = self.foot_joints[0]
+        self.joint_detail['ball'] = self.foot_joints[1]
+        self.joint_detail['tip'] = self.foot_joints[2]
 
     def set_joints(self, joints):
 
@@ -41,11 +53,9 @@ class Foot(Part):
 
         self.joints = joints
 
-        self.joint_detail['ankle'] = joints[0]
-        self.joint_detail['ball'] = joints[1]
-        self.joint_detail['tip'] = joints[2]
-
     def create_controls(self):
+
+        self._duplicate_joints()
 
         # Create roll pivots
         self.create_functionality()
@@ -70,7 +80,7 @@ class Foot(Part):
         self._create_pivots_setup()
 
     def connect_controls(self):
-        self._create_attrs()
+        self._create_functionality()
         self._connect_functionality()
 
         cmds.parentConstraint(self.joint_detail['ankle'], self.get_control(0).grp, mo=True)
@@ -96,11 +106,12 @@ class Foot(Part):
             cmds.setAttr("%s.overrideEnabled" % loc, True)
             cmds.setAttr("%s.overrideColor" % loc, 1)
             cmds.connectAttr("%s.helpers" % self.settings_node, "%s.displayHandle" % loc)
+            cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % loc)
 
         # Load in positions if exist
-        if self.data_file:
+        if self.part_file:
             log.debug("Data file found! Loading...")
-            key = os.path.splitext(os.path.basename(self.data_file))[0]
+            key = os.path.splitext(os.path.basename(self.part_file))[0]
             data = PartFileHandler(key).read()
             for key, vector in data.items():
                 cmds.setAttr("%s.translate" % key, *vector, type="float3")
@@ -118,7 +129,7 @@ class Foot(Part):
         cmds.parent(self.pivot_detail['bank_out'], self.pivot_detail['heel'])
 
         # Connections
-        cmds.parentConstraint(self.pivot_detail['ball'], self.joint_detail['ankle'], sr=['x', 'y', 'z'], mo=True)
+        # cmds.parentConstraint(self.pivot_detail['ball'], self.joint_detail['ankle'], sr=['x', 'y', 'z'], mo=True)
 
         # Collect setups
         for key, item in self.pivot_detail.items():
@@ -127,7 +138,7 @@ class Foot(Part):
         for key, item in self.ik_detail.items():
             self.setups.append(item)
 
-    def _create_attrs(self):
+    def _create_functionality(self):
         ctl = self.get_control(0)
         attrs = ['heel', 'ball', 'tip', 'bankIn', 'bankOut']
         for attr in attrs:
@@ -151,20 +162,38 @@ class Foot(Part):
 
                 cmds.connectAttr(settings_full_attr, "%s.%s" % (sr, settings_attr))
 
+        # Load settings for part
         if self.settings_file:
-            log.debug("Data file found! Loading...")
-            key = os.path.splitext(os.path.basename(self.data_file))[0]
+            log.debug("Settings file found! Loading...")
+            key = os.path.splitext(os.path.basename(self.part_file))[0]
             data = SettingsFileHandler(key).read()
             for full_attr, value in data.items():
                 cmds.setAttr(full_attr, value)
         else:
-            log.warning("No data file found, please create before continuing.")
-            return
-
-
+            log.warning("No settnings file found, please create before continuing.")
 
     def _connect_functionality(self):
-        pass
+        """
+        Connect attributes to foot functionality
+        """
+
+        ctl = self.get_control(0)
+        attrs = ['heel', 'ball', 'tip', 'bankIn', 'bankOut']
+        for attr in attrs:
+            pma = cmds.createNode("plusMinusAverage", name=name.set_suffix(self.name, "%sPma" % attr))
+            cmds.connectAttr("%s.%s" % (ctl.ctl, attr), "%s.input1D[0]" % pma)
+            cmds.connectAttr("%s.output1D" % pma, "%s.valueX" % self.range_detail[attr])
+
+        cmds.connectAttr("%s.outValueX" % self.range_detail['heel'], "%s.rotateX" % self.pivot_detail['heel'])
+        cmds.connectAttr("%s.outValueX" % self.range_detail['ball'], "%s.rotateX" % self.pivot_detail['ball'])
+        cmds.connectAttr("%s.outValueX" % self.range_detail['tip'], "%s.rotateX" % self.pivot_detail['tip'])
+        cmds.connectAttr("%s.outValueX" % self.range_detail['bankIn'], "%s.rotateZ" % self.pivot_detail['bank_in'])
+        cmds.connectAttr("%s.outValueX" % self.range_detail['bankOut'], "%s.rotateZ" % self.pivot_detail['bank_out'])
+
+        # Add reverse inbetweens
+        common.add_reverse_md("%s.outValueX" % self.range_detail['heel'], "%s.rotateX" % self.pivot_detail['heel'])
+        common.add_reverse_md("%s.outValueX" % self.range_detail['bankOut'], "%s.rotateZ" % self.pivot_detail['bank_out'])
+
 
 
 
@@ -185,8 +214,8 @@ class Foot(Part):
         cmds.joint(joints[0], e=True, oj="xyz", sao="yup", ch=True, zso=True)
 
         self.set_joints(joints)
-        self.set_data_file("/Users/eddiehoyle/Python/link/resources/data/parts/L_foot_0.json")
-        self.set_settings_file("/Users/eddiehoyle/Python/link/resources/data/settings/L_foot_0.json")
+        self.set_part_file("/Users/eddiehoyle/Python/link/resources/data/parts/foot_test.json")
+        self.set_settings_file("/Users/eddiehoyle/Python/link/resources/data/settings/foot_test.json")
         self.create()
 
         self.display_helpers(True)
