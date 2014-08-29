@@ -53,9 +53,11 @@ class Foot(Part):
 
         self.joints = joints
 
-    def create_controls(self):
+        self.joint_detail['ankle'] = self.joints[0]
+        self.joint_detail['ball'] = self.joints[1]
+        self.joint_detail['tip'] = self.joints[2]
 
-        self._duplicate_joints()
+    def create_controls(self):
 
         # Create roll pivots
         self.create_functionality()
@@ -96,6 +98,7 @@ class Foot(Part):
 
     def _create_pivots_setup(self):
         
+        top_grp = cmds.createNode("transform", name=name.create_name(self.position, "%sPivots" % self.description, 0, "grp"))
         self.pivot_detail['heel'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "heelNull"))[0]
         self.pivot_detail['ball'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "ballNull"))[0]
         self.pivot_detail['tip'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "tipNull"))[0]
@@ -127,9 +130,7 @@ class Foot(Part):
         cmds.parent(self.pivot_detail['tip'], self.pivot_detail['bank_in'])
         cmds.parent(self.pivot_detail['bank_in'], self.pivot_detail['bank_out'])
         cmds.parent(self.pivot_detail['bank_out'], self.pivot_detail['heel'])
-
-        # Connections
-        # cmds.parentConstraint(self.pivot_detail['ball'], self.joint_detail['ankle'], sr=['x', 'y', 'z'], mo=True)
+        cmds.parent(self.pivot_detail['heel'], top_grp)
 
         # Collect setups
         for key, item in self.pivot_detail.items():
@@ -137,6 +138,8 @@ class Foot(Part):
 
         for key, item in self.ik_detail.items():
             self.setups.append(item)
+
+        self.setups.append(top_grp)
 
     def _create_functionality(self):
         ctl = self.get_control(0)

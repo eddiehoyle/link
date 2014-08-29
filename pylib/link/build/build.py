@@ -183,13 +183,14 @@ class Link(object):
 
         leg_part.scale_shapes(6)
 
-        # Pv position
+        # Shapes and positions
         mult = 1
         if position == 'R':
             mult = -1
         leg_part.ik.pv_ctl.set_translates([9.13346 * mult, 48.869499999999995, 50])
         leg_part.ik.pv_ctl.scale_shapes(0.2)
         leg_part.ik.pv_ctl.rotate_shapes([-90, 0, 0])
+        leg_part.ik.ik_ctl.set_style("square")
 
         # ----------------------------------- #
         # Foot
@@ -200,11 +201,14 @@ class Link(object):
         foot_part.set_part_file('/Users/eddiehoyle/Python/link/resources/data/parts/%s_foot_0.json' % position)
         foot_part.set_settings_file('/Users/eddiehoyle/Python/link/resources/data/settings/%s_foot_0.json' % position)
         foot_part.create()
+        foot_part.scale_shapes(3)
 
-        # foot_part.set_parent_hook()
         self.append_part(foot_part)
 
-        foot_part.scale_shapes(3)
+        # Connect foot to leg
+        cmds.parentConstraint(foot_part.pivot_detail['ball'], leg_part.ik.ik, sr=['x', 'y', 'z'], mo=True)
+        cmds.parentConstraint(leg_part.ik.ik_ctl.ctl, cmds.listRelatives(foot_part.pivot_detail['heel'], p=True)[0], mo=True)
+        
 
 
     def create_hip(self):
