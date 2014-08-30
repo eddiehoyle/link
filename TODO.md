@@ -19,7 +19,7 @@
 
 ## File handling
 - [ ] Consider a versioning system for data files
-- [ ] Write a settings data sub class to handle settings at part level
+- [x] Write a settings data sub class to handle settings at part level
 
 
 ## Fundamental
@@ -29,14 +29,17 @@
 - [ ] Write secondary (deformer) part logic
 - [x] Add settings node
 - [ ] Get config working
-- [ ] Write data I/O logic
+- [x] Write data I/O logic
+- [ ] Refactor I/O logic to be a bit less automated
+- [ ] Incorporate eval() methods for I/O data
 - [ ] Write deformer save/load data logic
 
 
 ## Parts
+- [x] Connect IkFk control shape vis
 - [ ] Add settings attr to settings node, hidden to determine its a settings node
 - [ ] Look into determining on describing which methods can be run pre or post create
-- [ ] Add IkFk stretch
+- [x] Add IkFk stretch
 - [x] Fix IkFkSpline
 - [ ] Add detail to IkSpline for number of controls, clusters, etc
 - [x] Write Fk part
@@ -53,7 +56,7 @@
 - [ ] Write a twist deformer part
 - [x] Write a global part (named Base case global is reserved)
 - [x] Write spine part
-- [ ] Write foot part
+- [x] Write foot part
 - [ ] Write multi part (combine parts?)
 - [ ] Create face part library
 - [ ] Write eye part

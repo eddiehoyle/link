@@ -158,8 +158,8 @@ class Foot(Part):
             # Create settings node connections
             for settings_attr in ['minX', 'maxX', 'oldMinX', 'oldMaxX']:
                 titled_attr = re.sub('([a-zA-Z])', lambda k: k.groups()[0].upper(), settings_attr, 1)
-                settings_full_attr = "%s.%s%s" % (self.settings_node, attr, titled_attr)
-                cmds.addAttr(self.settings_node, ln="%s%s" % (attr, titled_attr), at="double")
+                settings_full_attr = "%s.%s%s" % (self.setup_node, attr, titled_attr)
+                cmds.addAttr(self.setup_node, ln="%s%s" % (attr, titled_attr), at="double")
                 cmds.setAttr(settings_full_attr, cb=True)
                 cmds.setAttr(settings_full_attr, k=True)
 

@@ -28,11 +28,16 @@ class Module(object):
     def _create_module_nodes(self):
         """Create top nodes and settings"""
 
-        # Create top node
+        # Create nodes
         self.top_node = cmds.createNode("transform", name=self.name)
         self.control_node = cmds.createNode("transform", name=name.set_description_suffix(self.name, "control"))
         self.setup_node = cmds.createNode("transform", name=name.set_description_suffix(self.name, "setup"))
         cmds.parent([self.setup_node, self.control_node], self.top_node)
+
+        # Lock attrs
+        attr.lock_all(self.top_node)
+        attr.lock_all(self.control_node)
+        attr.lock_all(self.setup_node)
 
         # Create settings node
         loc = cmds.spaceLocator(name=name.set_suffix(self.name, "settings"))[0]
@@ -85,9 +90,16 @@ class Module(object):
             if ctl.grp in cmds.ls(assemblies=True):
                 cmds.parent(ctl.grp, self.control_node)
 
-        for node in set(self.setups):
+        # Connect vis and parent under setup node
+        for node in set(self.setups):            
+
+            cons = cmds.listConnections("%s.visibility" % node, source=True, destination=False, plugs=True) or []
+            if not cons:
+                cmds.connectAttr("%s.helpers" % self.settings_node, "%s.visibility" % node, force=True)
+
             if node in cmds.ls(assemblies=True):
                 cmds.parent(node, self.setup_node)
+
 
 
 

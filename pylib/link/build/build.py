@@ -5,6 +5,7 @@
 
 from link.config import Config
 from maya import cmds
+from link.util import name
 from link.modules.components.skeleton import Skeleton
 from link.modules.components.proxy import Proxy
 from link.modules.parts.fk import FkChain
@@ -190,7 +191,7 @@ class Link(object):
         leg_part.ik.pv_ctl.set_translates([9.13346 * mult, 48.869499999999995, 50])
         leg_part.ik.pv_ctl.scale_shapes(0.2)
         leg_part.ik.pv_ctl.rotate_shapes([-90, 0, 0])
-        leg_part.ik.ik_ctl.set_style("square")
+        # leg_part.ik.ik_ctl.set_style("square")
 
         # ----------------------------------- #
         # Foot
@@ -206,8 +207,19 @@ class Link(object):
         self.append_part(foot_part)
 
         # Connect foot to leg
-        cmds.parentConstraint(foot_part.pivot_detail['ball'], leg_part.ik.ik, sr=['x', 'y', 'z'], mo=True)
-        cmds.parentConstraint(leg_part.ik.ik_ctl.ctl, cmds.listRelatives(foot_part.pivot_detail['heel'], p=True)[0], mo=True)
+        ik_handle_grp = cmds.listRelatives(leg_part.ik.ik, p=True)[0]
+        cmds.parentConstraint(foot_part.pivot_detail['ball'], ik_handle_grp, mo=True)
+        foot_con = cmds.parentConstraint([leg_part.ik.ik_ctl.ctl, 
+                                          leg_part.fk.get_control(-1).ctl],
+                                          cmds.listRelatives(foot_part.pivot_detail['heel'], p=True)[0],
+                                          mo=True)[0]
+
+        foot_rev = cmds.createNode("reverse", name=name.create_name(position, "footIkFk", 0, "rev"))
+        aliases = cmds.parentConstraint(foot_con, wal=True, q=True)
+
+        cmds.connectAttr("%s.fkik" % leg_part.settings_node, "%s.%s" % (foot_con, aliases[0]))
+        cmds.connectAttr("%s.fkik" % leg_part.settings_node, "%s.inputX" % foot_rev)
+        cmds.connectAttr("%s.outputX" % foot_rev, "%s.%s" % (foot_con, aliases[1]))
         
 
 

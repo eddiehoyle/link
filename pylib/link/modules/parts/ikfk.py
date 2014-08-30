@@ -111,6 +111,14 @@ class IkFk(Part):
             cmds.connectAttr("%s.fkik" % self.settings_node, "%s.%s" % (con, aliases[0]))
             cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (con, aliases[1]))
 
+            # Control visibility
+            for fk_shape in fk_ctl.shapes:
+                cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_shape)
+
+        for ik_key, ik_ctl in self.ik.controls.items():
+            for ik_shape in ik_ctl.shapes:
+                cmds.connectAttr("%s.fkik" % self.settings_node, "%s.visibility" % ik_shape)
+
         # Connect base Fk control
         cmds.pointConstraint(self.ik.base_null, self.fk.fk_joints[0], mo=True)
         cmds.connectAttr("%s.fkik" % self.settings_node, "%s.ikBlend" % self.ik.ik)
@@ -127,3 +135,5 @@ class IkFk(Part):
         self.ik.pv_ctl.scale_shapes(0.5)
         self.ik.pv_ctl.rotate_shapes([-90, 0, 0])
         self.add_stretch()
+
+        self.display_helpers(True)

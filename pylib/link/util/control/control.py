@@ -66,7 +66,34 @@ class Control(object):
         self.lock_vis()
 
     def set_style(self, style):
+        cons = []
+        for node in self.shapes:
+            in_cons_src = cmds.listConnections(node, plugs=True, source=True) or []
+            in_cons_dst = []
+            for in_con in in_cons_src:
+                dst_con = cmds.listConnections(in_con, d=True, p=True)[0]
+                in_cons_dst.append(dst_con)
+
+            out_cons_src = cmds.listConnections(node, plugs=True, d=True) or []
+            out_cons_dst = []
+            for out_con in out_cons_src:
+                dst_con = cmds.listConnections(out_con, s=True, p=True)[0]
+                out_cons_dst.append(dst_con)
+
+            cons.append([in_cons_src, in_cons_dst, out_cons_src, out_cons_dst])
+
         self._shape.set_style(style)
+
+        for con in cons:
+            in_cons_src, in_cons_dst, out_cons_src, out_cons_dst = con
+            for in_src, in_dst in zip(in_cons_src, in_cons_dst):
+                print 'in', in_src, in_dst
+                # cmds.connectAttr(in_src, in_dst)
+
+            for out_src, out_dst in zip(out_cons_src, out_cons_dst):
+                print 'out', out_src, out_dst
+                # cmds.connectAttr(out_src, out_dst)
+
 
     def scale_shapes(self, value):
         self._shape.scale_shapes(value)

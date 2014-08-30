@@ -75,7 +75,6 @@ class IkSc(Part):
         self.controls[ik_ctl.name] = ik_ctl
         self.ik_ctl = ik_ctl
 
-        # ---------------------- #
         # Create base null
         self.base_null = cmds.createNode("transform", name=name.set_suffix(ik_ctl.name, "baseNull"))
         xform.match_translates(self.base_null, self.ik_joints[0])
@@ -112,11 +111,15 @@ class IkSc(Part):
         cmds.setAttr("%s.interpType" % con, 2)
 
     def add_stretch(self):
-        """Drive ik_joints by translateX and distance between start and end"""
+        """Drive ik_joints by scaleX and distance between start and end"""
 
         # Create distance
+        ik_grp = cmds.createNode("transform", name=name.create_name(self.position, "%sIkHandleStretch" % self.description, 0, "grp"))
         loc_start, loc_end, dst_node = common.create_distance(self.ik_joints[0], self.ik_joints[-1])
+        loc_start = cmds.rename(loc_start, name.create_name(self.position, "%sStretch" % self.description, 0, "loc"))
+        loc_end = cmds.rename(loc_end, name.create_name(self.position, "%sStretch" % self.description, 1, "loc"))
         distance = cmds.getAttr("%s.distance" % dst_node)
+        self.setups.append([loc_start, loc_end])
 
         # Create stretch multiplier
         div_mlt = cmds.createNode("multiplyDivide", name=name.set_suffix(self.name, "divMlt"))
@@ -141,16 +144,15 @@ class IkSc(Part):
         if end_x < 0:
             mult = -1
 
-        # Parent dst locs
-        cmds.parent(loc_end, self.ik_ctl.ctl)
+        # Tidy up parents
+        cmds.parent(loc_end, ik_grp)
+        cmds.parent(self.ik, ik_grp)
+        cmds.parent(ik_grp, self.ik_ctl.ctl)
         cmds.parent(loc_start, self.base_null)
 
+        # Scale ik joints and connect ik to source joints
         for ik_jnt, src_jnt in zip(self.ik_joints[:-1], self.joints):
-
-            # Scale ik joints
             cmds.connectAttr("%s.outputX" % div_mlt, "%s.scaleX" % ik_jnt)
-
-            # Connect ik to source joints
             cmds.connectAttr("%s.scaleX" % ik_jnt, "%s.scaleX" % src_jnt)
 
     def add_settings(self):
@@ -167,6 +169,8 @@ class IkSc(Part):
 
         self.set_joints(joints)
         self.create()
+
+        self.display_helpers(True)
 
 
 class IkRp(IkSc):
@@ -233,5 +237,7 @@ class IkRp(IkSc):
 
         self.pv_ctl.rotate_shapes([-90, 0, 0])
         self.pv_ctl.scale_shapes(0.5)
-        # self.108_ctl.rotate_shapes([0, 0, 90])
+
         self.add_stretch()
+
+        self.display_helpers(True)
