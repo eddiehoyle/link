@@ -119,11 +119,11 @@ class Part(Module):
         for key, ctl in self.controls.items():
             ctl.scale_shapes(value)
 
-    def rotate_shapes(self, array, world=False):
+    def rotate_shapes(self, vector, world=False):
         """Rotate all control shapes"""
 
         for key, ctl in self.controls.items():
-            ctl.rotate_shapes(array, world=world)
+            ctl.rotate_shapes(vector, world=world)
 
     def set_orient(self, vector, world=True):
         """Set an offset orient to be applied at creation time"""
@@ -137,13 +137,13 @@ class Part(Module):
         self.offset['point'] = dict(vector=vector,
                                     world=world)
 
-    def set_translates(self, array, world=True):
+    def set_translates(self, vector, world=True):
         for key, ctl in self.controls.items():
-            xform.set_translates(ctl.grp, array, world=world)
+            xform.set_translates(ctl.grp, vector, world=world)
 
-    def set_rotates(self, array, world=False):
+    def set_rotates(self, vector, world=False):
         for key, ctl in self.controls.items():
-            xform.set_rotates(ctl.grp, array, world=world)
+            xform.set_rotates(ctl.grp, vector, world=world)
 
     def get_joint_positions(self):
         positions = []

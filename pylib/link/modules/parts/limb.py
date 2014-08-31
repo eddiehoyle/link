@@ -28,6 +28,7 @@ class Foot(Part):
         self.joint_detail = {}
         self.pivot_detail = {}
         self.ik_detail = {}
+        self.pma_detail = {}
         
 
     def set_part_file(self, path):
@@ -73,9 +74,25 @@ class Foot(Part):
 
         self.controls[ctl.name] = ctl
 
+        toe_ctl = Control(self.position, "toe", 0)
+        toe_ctl.create()
+
+        toe_ctl.lock_translates()
+        toe_ctl.lock_scales()
+        toe_ctl.rotate_shapes([0, 0, 90])
+
+        toe_ctl.set_style('circle')
+
+        self.controls[toe_ctl.name] = toe_ctl
+
     def match_controls(self):
         xform.match_translates(self.get_control(0).grp, self.joint_detail['ankle'])
+        xform.match_translates(self.get_control(1).grp, self.joint_detail['ball'])
 
+    def parent_controls(self):
+        switch_ctl = self.get_control(0)
+        toe_ctl = self.get_control(1)
+        cmds.parent(toe_ctl.grp, switch_ctl.ctl)
 
     def create_functionality(self):
         self._create_reverse_setup()
@@ -86,6 +103,7 @@ class Foot(Part):
         self._connect_functionality()
 
         cmds.parentConstraint(self.joint_detail['ankle'], self.get_control(0).grp, mo=True)
+        cmds.connectAttr("%s.rotate" % self.get_control(1).ctl, "%s.rotate" % self.pivot_detail['toe'])
 
     def _create_reverse_setup(self):
         
@@ -97,11 +115,23 @@ class Foot(Part):
         self.ik_detail['tip'] = tip_ik
 
     def _create_pivots_setup(self):
-        
+            
+        # Transforms
         top_grp = cmds.createNode("transform", name=name.create_name(self.position, "%sPivots" % self.description, 0, "grp"))
+        tip_grp = cmds.createNode("transform", name=name.create_name(self.position, "%sTipPivots" % self.description, 0, "grp"))
+        toe_grp = cmds.createNode("transform", name=name.create_name(self.position, "%sToePivots" % self.description, 0, "grp"))
+        ball_grp = cmds.createNode("transform", name=name.create_name(self.position, "%sBallPivots" % self.description, 0, "grp"))
+
+        xform.match_translates(tip_grp, self.joint_detail['tip'])
+        xform.match_translates(ball_grp, self.joint_detail['ball'])
+        xform.match_translates(toe_grp, self.joint_detail['ball'])
+
         self.pivot_detail['heel'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "heelNull"))[0]
-        self.pivot_detail['ball'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "ballNull"))[0]
-        self.pivot_detail['tip'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "tipNull"))[0]
+        ball_loc = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "ballNull"))[0]
+        tip_loc = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "tipNull"))[0]
+        self.pivot_detail['toe'] = toe_grp
+        self.pivot_detail['tip'] = tip_grp
+        self.pivot_detail['ball'] = ball_grp
         self.pivot_detail['bank_in'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "bankInNull"))[0]
         self.pivot_detail['bank_out'] = cmds.spaceLocator(name=name.create_name(self.position, self.description, 0, "bankOutNull"))[0]
 
@@ -123,11 +153,14 @@ class Foot(Part):
             return
 
         # Parent detail
-        cmds.parent(self.ik_detail['ball'], self.pivot_detail['ball'])
-        cmds.parent(self.ik_detail['tip'], self.pivot_detail['tip'])
+        cmds.parent(self.ik_detail['ball'], ball_loc)
+        cmds.parent(self.ik_detail['tip'], tip_loc)
 
-        cmds.parent(self.pivot_detail['ball'], self.pivot_detail['tip'])
-        cmds.parent(self.pivot_detail['tip'], self.pivot_detail['bank_in'])
+        cmds.parent(ball_loc, ball_grp)
+        cmds.parent(tip_loc, toe_grp)
+        cmds.parent([toe_grp, ball_grp], tip_grp)
+        cmds.parent(tip_grp, self.pivot_detail['bank_in'])
+
         cmds.parent(self.pivot_detail['bank_in'], self.pivot_detail['bank_out'])
         cmds.parent(self.pivot_detail['bank_out'], self.pivot_detail['heel'])
         cmds.parent(self.pivot_detail['heel'], top_grp)
@@ -171,7 +204,8 @@ class Foot(Part):
             key = os.path.splitext(os.path.basename(self.part_file))[0]
             data = SettingsFileHandler(key).read()
             for full_attr, value in data.items():
-                cmds.setAttr(full_attr, value)
+                if cmds.objExists(full_attr):
+                    cmds.setAttr(full_attr, value)
         else:
             log.warning("No settnings file found, please create before continuing.")
 
@@ -186,6 +220,8 @@ class Foot(Part):
             pma = cmds.createNode("plusMinusAverage", name=name.set_suffix(self.name, "%sPma" % attr))
             cmds.connectAttr("%s.%s" % (ctl.ctl, attr), "%s.input1D[0]" % pma)
             cmds.connectAttr("%s.output1D" % pma, "%s.valueX" % self.range_detail[attr])
+
+            self.pma_detail[attr] = pma
 
         cmds.connectAttr("%s.outValueX" % self.range_detail['heel'], "%s.rotateX" % self.pivot_detail['heel'])
         cmds.connectAttr("%s.outValueX" % self.range_detail['ball'], "%s.rotateX" % self.pivot_detail['ball'])

@@ -23,7 +23,8 @@ class IkSc(Part):
         self.ik = None
         self.effector = None
 
-        # Important ctls
+        # Important stuff
+        self.anno = None
         self.polevector_ctl = None
         self.ik_ctl = None
         self.base_null = None
@@ -227,7 +228,7 @@ class IkRp(IkSc):
 
         # Add annotation
         mid_jnt = self.ik_joints[(len(self.ik_joints)-1)/2]
-        anno.aim(ctl.ctl, mid_jnt, "pv")
+        self.anno = anno.aim(ctl.ctl, mid_jnt, "pv")
 
         self.pv_ctl = ctl
         self.controls[ctl.name] = ctl

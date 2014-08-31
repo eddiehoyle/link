@@ -52,8 +52,7 @@ class PartDataManager(object):
     def save_selected_settings(self, *args):
         settings_node = cmds.ls(sl=1)
         if settings_node:
-            settings_shape = cmds.listRelatives(settings_node, shapes=True)[0]
-            data = self._get_settings_data(settings_shape)
+            data = self._get_settings_data(settings_node[0])
             key = self._get_key()
             SettingsFileHandler(key).write(data)
 
@@ -72,8 +71,6 @@ class PartDataManager(object):
         for node in transforms:
             data[node] = cmds.xform(node, q=True, t=True, ws=True)
         return data
-
-    
 
     def _get_settings_data(self, settings_node):
         data = {}

@@ -119,6 +119,9 @@ class IkFk(Part):
             for ik_shape in ik_ctl.shapes:
                 cmds.connectAttr("%s.fkik" % self.settings_node, "%s.visibility" % ik_shape)
 
+        cmds.connectAttr("%s.fkik" % self.settings_node, "%s.visibility" % self.ik.anno)
+
+
         # Connect base Fk control
         cmds.pointConstraint(self.ik.base_null, self.fk.fk_joints[0], mo=True)
         cmds.connectAttr("%s.fkik" % self.settings_node, "%s.ikBlend" % self.ik.ik)

@@ -37,21 +37,20 @@ class Link(object):
         """Create rig"""
 
         # Global control
-        # self.create_global()
+        self.create_global()
 
         # Components
         self.create_skeleton()
         self.create_proxy()
 
         # Parts
-        # self.create_hat()
-        # self.create_neck()
-        # self.create_spine()
-        # self.create_root()
-        # self.create_hip()
+        self.create_hat()
+        self.create_neck()
+        self.create_spine()
+        self.create_root()
 
         for pos in ['L' , 'R']:
-            # self.create_arm(pos)
+            self.create_arm(pos)
             self.create_leg(pos)
 
     def _post_build(self):
