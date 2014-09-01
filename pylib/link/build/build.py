@@ -60,12 +60,9 @@ class Link(object):
         self._load_data()
 
         for key, part in self.parts.items():
-            part.display_helpers(True)
-
-
+            part.display_helpers(False)
 
     def _load_data(self):
-        # ControlFileHandler().apply()
         pass
 
     def build(self):
@@ -114,8 +111,7 @@ class Link(object):
         part = Base("C", "global")
         part.create()
         self.append_part(part)
-
-        part.scale_shapes(12)
+        part.scale_shapes(32)
     
     def create_hat(self):
         hat_part = IkFkSpline("C", "hat")
@@ -190,9 +186,8 @@ class Link(object):
         leg_part.ik.pv_ctl.set_translates([9.13346 * mult, 48.869499999999995, 50])
         leg_part.ik.pv_ctl.scale_shapes(0.2)
         leg_part.ik.pv_ctl.rotate_shapes([-90, 0, 0])
-        # leg_part.ik.ik_ctl.set_style("square")
+        leg_part.ik.ik_ctl.set_style("square")
 
-        # ----------------------------------- #
         # Foot
         foot_part = Foot(position, 'foot')
         joints = ["%s_leg_2_jnt" % (position)]
@@ -219,8 +214,6 @@ class Link(object):
         cmds.connectAttr("%s.fkik" % leg_part.settings_node, "%s.%s" % (foot_con, aliases[0]))
         cmds.connectAttr("%s.fkik" % leg_part.settings_node, "%s.inputX" % foot_rev)
         cmds.connectAttr("%s.outputX" % foot_rev, "%s.%s" % (foot_con, aliases[1]))
-        
-
 
     def create_hip(self):
         part = Simple('C', 'hip')
@@ -237,7 +230,7 @@ class Link(object):
         part.set_orient([0, 0, 0], world=True)
         part.create()
         self.append_part(part)
-        
+
         part.scale_shapes(10)
 
     def create_spine(self):

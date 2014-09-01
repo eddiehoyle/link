@@ -129,6 +129,8 @@ class FkChain(Simple):
         self.set_joints(jnts)
         self.create()
         self.rotate_shapes([0, 0, 90])
-        # self.add_stretch()
+        self.add_stretch()
 
+        cmds.connectAttr(self.get_control(0).ctl + ".translateX", self.get_control(0).shapes[0] + ".visibility")
+        self.get_control(0).set_style('square')
 

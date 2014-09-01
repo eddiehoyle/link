@@ -112,12 +112,12 @@ class IkFk(Part):
             cmds.connectAttr("%s.outputX" % rev, "%s.%s" % (con, aliases[1]))
 
             # Control visibility
-            for fk_shape in fk_ctl.shapes:
-                cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_shape)
+            cmds.setAttr("%s.visibility" % fk_ctl.ctl, l=False)
+            cmds.connectAttr("%s.outputX" % rev, "%s.visibility" % fk_ctl.ctl)
 
         for ik_key, ik_ctl in self.ik.controls.items():
-            for ik_shape in ik_ctl.shapes:
-                cmds.connectAttr("%s.fkik" % self.settings_node, "%s.visibility" % ik_shape)
+            cmds.setAttr("%s.visibility" % ik_ctl.ctl, l=False)
+            cmds.connectAttr("%s.fkik" % self.settings_node, "%s.visibility" % ik_ctl.ctl)
 
         cmds.connectAttr("%s.fkik" % self.settings_node, "%s.visibility" % self.ik.anno)
 

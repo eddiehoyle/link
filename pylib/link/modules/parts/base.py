@@ -19,15 +19,21 @@ class Base(Simple):
 
         top_ctl = Control("C", "global", 0)
         top_ctl.create()
-        top_ctl.set_style("square")
+        top_ctl.set_style("circle")
         top_ctl.lock_scales()
 
         sec_ctl = Control("C", "global", 1)
         sec_ctl.create()
-        sec_ctl.set_style("square")
+        sec_ctl.set_style("circle")
         sec_ctl.lock_scales()
 
         cmds.parent(sec_ctl.grp, top_ctl.ctl)
+
+        top_ctl.scale_shapes(1.2)
+        sec_ctl.scale_shapes(1)
+
+        self.controls[top_ctl.name] = top_ctl
+        self.controls[sec_ctl.name] = sec_ctl
 
         return self.controls
 
